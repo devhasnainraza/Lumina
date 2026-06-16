@@ -1,0 +1,162 @@
+'use client';
+
+import { motion } from 'framer-motion';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { documentsApi } from '@/lib/api/documents';
+import { FileText, Trash2, CheckCircle, XCircle, Loader2 } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { formatBytes, formatRelativeTime } from '@/lib/utils/format';
+import type { Document } from '@/types/document';
+import { cn } from '@/lib/utils/cn';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import { useState } from 'react';
+
+interface DocumentListProps {
+  documents: Document[];
+}
+
+export function DocumentList({ documents }: DocumentListProps) {
+  const queryClient = useQueryClient();
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [documentToDelete, setDocumentToDelete] = useState<string | null>(null);
+
+  const deleteMutation = useMutation({
+    mutationFn: (documentId: string) => documentsApi.delete(documentId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['documents'] });
+      setDeleteDialogOpen(false);
+      setDocumentToDelete(null);
+    },
+  });
+
+  const handleDeleteClick = (documentId: string) => {
+    setDocumentToDelete(documentId);
+    setDeleteDialogOpen(true);
+  };
+
+  const handleConfirmDelete = () => {
+    if (documentToDelete) {
+      deleteMutation.mutate(documentToDelete);
+    }
+  };
+
+  if (documents.length === 0) {
+    return (
+      <div className="text-center py-12">
+        <FileText className="w-12 h-12 text-text-muted mx-auto mb-4" />
+        <p className="text-text-secondary">No documents uploaded yet</p>
+      </div>
+    );
+  }
+
+  return (
+    <>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        {documents.map((doc, index) => (
+          <motion.div
+            key={doc.id}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3, delay: index * 0.05 }}
+            whileHover={{ scale: 1.02, y: -2 }}
+            className="bg-surface border border-white/10 rounded-lg p-4 hover:border-primary/50 transition-colors"
+          >
+            <div className="flex items-start justify-between mb-3">
+              <div className="flex items-center gap-3 flex-1 min-w-0">
+                <FileText className="w-8 h-8 text-primary flex-shrink-0" />
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium text-text-primary truncate">
+                    {doc.filename}
+                  </p>
+                  <p className="text-xs text-text-muted">
+                    {formatBytes(doc.fileSize)}
+                  </p>
+                </div>
+              </div>
+
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => handleDeleteClick(doc.id)}
+                className="text-text-muted hover:text-error flex-shrink-0"
+              >
+                <Trash2 className="w-4 h-4" />
+              </Button>
+            </div>
+
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                {doc.status === 'completed' && (
+                  <>
+                    <CheckCircle className="w-4 h-4 text-success" />
+                    <span className="text-xs text-success">Completed</span>
+                  </>
+                )}
+                {doc.status === 'processing' && (
+                  <>
+                    <Loader2 className="w-4 h-4 text-primary animate-spin" />
+                    <span className="text-xs text-primary">Processing</span>
+                  </>
+                )}
+                {doc.status === 'uploaded' && (
+                  <>
+                    <Loader2 className="w-4 h-4 text-primary animate-spin" />
+                    <span className="text-xs text-primary">Uploaded</span>
+                  </>
+                )}
+                {doc.status === 'failed' && (
+                  <>
+                    <XCircle className="w-4 h-4 text-error" />
+                    <span className="text-xs text-error">Failed</span>
+                  </>
+                )}
+              </div>
+
+              <span className="text-xs text-text-muted">
+                {formatRelativeTime(doc.createdAt)}
+              </span>
+            </div>
+
+            {doc.status === 'failed' && doc.errorMessage && (
+              <p className="text-xs text-error mt-2">{doc.errorMessage}</p>
+            )}
+          </motion.div>
+        ))}
+      </div>
+
+      <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Delete Document</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to delete this document? This action cannot be undone.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setDeleteDialogOpen(false)}
+              disabled={deleteMutation.isPending}
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={handleConfirmDelete}
+              disabled={deleteMutation.isPending}
+            >
+              {deleteMutation.isPending ? 'Deleting...' : 'Delete'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </>
+  );
+}

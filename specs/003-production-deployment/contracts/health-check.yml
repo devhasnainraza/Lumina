@@ -1,0 +1,214 @@
+openapi: 3.0.0
+info:
+  title: Health Check API
+  version: 1.0.0
+  description: Health and readiness check endpoints for RAG chatbot backend
+
+servers:
+  - url: http://localhost:8001
+    description: Local development
+  - url: http://backend:8000
+    description: Docker internal network
+
+paths:
+  /health:
+    get:
+      summary: Service health check
+      description: |
+        Returns comprehensive health status of the backend service and all dependencies.
+        Used by Docker HEALTHCHECK and monitoring systems.
+      operationId: getHealth
+      tags:
+        - Health
+      responses:
+        '200':
+          description: All services healthy
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthResponse'
+              examples:
+                healthy:
+                  value:
+                    status: healthy
+                    timestamp: "2026-05-11T12:00:00Z"
+                    services:
+                      database: connected
+                      vector_db: connected
+                      redis: connected
+                    version: "1.0.0"
+        '503':
+          description: One or more services unhealthy
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnhealthyResponse'
+              examples:
+                database_down:
+                  value:
+                    status: unhealthy
+                    timestamp: "2026-05-11T12:00:00Z"
+                    services:
+                      database: disconnected
+                      vector_db: connected
+                      redis: connected
+                    errors:
+                      - "Database connection failed: connection refused"
+
+  /ready:
+    get:
+      summary: Readiness check
+      description: |
+        Returns whether the service is ready to accept traffic.
+        Used by load balancers and orchestration systems.
+      operationId: getReadiness
+      tags:
+        - Health
+      responses:
+        '200':
+          description: Service ready to accept traffic
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReadinessResponse'
+              examples:
+                ready:
+                  value:
+                    ready: true
+                    timestamp: "2026-05-11T12:00:00Z"
+        '503':
+          description: Service not ready
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReadinessResponse'
+              examples:
+                not_ready:
+                  value:
+                    ready: false
+                    timestamp: "2026-05-11T12:00:00Z"
+                    reason: "Database migrations pending"
+
+  /metrics:
+    get:
+      summary: Application metrics (optional)
+      description: |
+        Returns basic application metrics for monitoring.
+        Optional endpoint for observability.
+      operationId: getMetrics
+      tags:
+        - Monitoring
+      responses:
+        '200':
+          description: Metrics data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MetricsResponse'
+
+components:
+  schemas:
+    HealthResponse:
+      type: object
+      required:
+        - status
+        - timestamp
+        - services
+      properties:
+        status:
+          type: string
+          enum: [healthy, degraded, unhealthy]
+          description: Overall health status
+        timestamp:
+          type: string
+          format: date-time
+          description: ISO 8601 timestamp of health check
+        services:
+          type: object
+          description: Health status of individual dependencies
+          properties:
+            database:
+              type: string
+              enum: [connected, disconnected]
+            vector_db:
+              type: string
+              enum: [connected, disconnected]
+            redis:
+              type: string
+              enum: [connected, disconnected, not_configured]
+        version:
+          type: string
+          description: Application version
+
+    UnhealthyResponse:
+      type: object
+      required:
+        - status
+        - timestamp
+        - services
+        - errors
+      properties:
+        status:
+          type: string
+          enum: [unhealthy]
+        timestamp:
+          type: string
+          format: date-time
+        services:
+          type: object
+          properties:
+            database:
+              type: string
+              enum: [connected, disconnected]
+            vector_db:
+              type: string
+              enum: [connected, disconnected]
+            redis:
+              type: string
+              enum: [connected, disconnected, not_configured]
+        errors:
+          type: array
+          items:
+            type: string
+          description: List of error messages
+
+    ReadinessResponse:
+      type: object
+      required:
+        - ready
+        - timestamp
+      properties:
+        ready:
+          type: boolean
+          description: Whether service is ready to accept traffic
+        timestamp:
+          type: string
+          format: date-time
+        reason:
+          type: string
+          description: Reason if not ready (optional)
+
+    MetricsResponse:
+      type: object
+      properties:
+        requests_total:
+          type: integer
+          description: Total number of requests processed
+        requests_per_second:
+          type: number
+          format: float
+          description: Current request rate
+        average_latency_ms:
+          type: number
+          format: float
+          description: Average request latency in milliseconds
+        error_rate:
+          type: number
+          format: float
+          description: Error rate (0.0 to 1.0)
+        active_connections:
+          type: integer
+          description: Number of active connections
+        uptime_seconds:
+          type: integer
+          description: Service uptime in seconds

@@ -1,0 +1,267 @@
+# Docker Compose Configuration Schema
+# This file documents the structure and requirements for docker-compose.yml
+
+version: '3.8'
+
+services:
+  # Frontend Service - Next.js Application
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        - NODE_ENV=production
+    image: rag-frontend:latest
+    container_name: rag-frontend
+    ports:
+      - "3000:3000"
+    environment:
+      - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL:-http://localhost:8001}
+      - NODE_ENV=production
+    depends_on:
+      backend:
+        condition: service_healthy
+    networks:
+      - rag-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:3000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 20s
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+        reservations:
+          cpus: '0.25'
+          memory: 256M
+
+  # Backend Service - FastAPI Application
+  backend:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+      args:
+        - PYTHON_VERSION=3.11
+    image: rag-backend:latest
+    container_name: rag-backend
+    ports:
+      - "8001:8000"
+    environment:
+      # Database
+      - DATABASE_URL=${DATABASE_URL}
+      # AI Provider
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+      # Security
+      - JWT_SECRET=${JWT_SECRET}
+      # Application
+      - VECTOR_DB_PATH=/app/data/chromadb
+      - UPLOAD_DIR=/app/uploads
+      - MODEL_NAME=${MODEL_NAME:-gemini-1.5-pro}
+      - TEMPERATURE=${TEMPERATURE:-0.1}
+      - TOP_K=${TOP_K:-5}
+      - MAX_CONTEXT_TOKENS=${MAX_CONTEXT_TOKENS:-6000}
+      - MAX_RESPONSE_TOKENS=${MAX_RESPONSE_TOKENS:-1000}
+      - MIN_RELEVANCE_SCORE=${MIN_RELEVANCE_SCORE:-0.7}
+    volumes:
+      - uploads_data:/app/uploads
+    depends_on:
+      postgres:
+        condition: service_healthy
+      chromadb:
+        condition: service_started
+    networks:
+      - rag-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 2G
+        reservations:
+          cpus: '0.5'
+          memory: 1G
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15-alpine
+    container_name: rag-postgres
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER:-postgres}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=${POSTGRES_DB:-ragdb}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - rag-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 1G
+        reservations:
+          cpus: '0.25'
+          memory: 512M
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # ChromaDB Vector Database
+  chromadb:
+    image: chromadb/chroma:latest
+    container_name: rag-chromadb
+    environment:
+      - IS_PERSISTENT=TRUE
+    volumes:
+      - chroma_data:/chroma/chroma
+    networks:
+      - rag-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/v1/heartbeat"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 20s
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 1G
+        reservations:
+          cpus: '0.25'
+          memory: 512M
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # Redis Cache (Optional)
+  redis:
+    image: redis:7-alpine
+    container_name: rag-redis
+    command: redis-server --appendonly yes
+    volumes:
+      - redis_data:/data
+    networks:
+      - rag-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 5s
+    deploy:
+      resources:
+        limits:
+          cpus: '0.25'
+          memory: 256M
+        reservations:
+          cpus: '0.1'
+          memory: 128M
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+    profiles:
+      - with-redis
+
+# Persistent Volumes
+volumes:
+  uploads_data:
+    driver: local
+    name: rag_uploads_data
+  postgres_data:
+    driver: local
+    name: rag_postgres_data
+  chroma_data:
+    driver: local
+    name: rag_chroma_data
+  redis_data:
+    driver: local
+    name: rag_redis_data
+
+# Networks
+networks:
+  rag-network:
+    driver: bridge
+    name: rag_network
+    ipam:
+      config:
+        - subnet: 172.28.0.0/16
+
+# Configuration Notes:
+#
+# 1. Environment Variables:
+#    - All sensitive values (passwords, API keys) must be set in .env file
+#    - Required: DATABASE_URL, GEMINI_API_KEY, JWT_SECRET, POSTGRES_PASSWORD
+#    - Optional: MODEL_NAME, TEMPERATURE, TOP_K, etc. (have defaults)
+#
+# 2. Service Dependencies:
+#    - Frontend depends on backend (healthy)
+#    - Backend depends on postgres (healthy) and chromadb (started)
+#    - Use 'condition: service_healthy' for critical dependencies
+#
+# 3. Health Checks:
+#    - All services have health checks for automatic recovery
+#    - start_period allows time for initialization
+#    - interval/timeout/retries control check frequency
+#
+# 4. Restart Policies:
+#    - 'unless-stopped' restarts on failure but not on manual stop
+#    - Prevents infinite restart loops
+#
+# 5. Resource Limits:
+#    - Limits prevent resource exhaustion
+#    - Reservations ensure minimum resources
+#    - Adjust based on workload
+#
+# 6. Logging:
+#    - json-file driver with rotation
+#    - 10MB max size, 3 files retained
+#    - Prevents disk space exhaustion
+#
+# 7. Volumes:
+#    - Named volumes for persistence
+#    - Survive container removal
+#    - Backup regularly
+#
+# 8. Networks:
+#    - Custom bridge network for DNS resolution
+#    - Services communicate by name
+#    - Isolated from default network
+#
+# 9. Profiles:
+#    - Redis uses 'with-redis' profile (optional)
+#    - Start with: docker-compose --profile with-redis up
+#
+# 10. Security:
+#     - No root users in containers
+#     - Internal services not exposed to host
+#     - Secrets via environment variables only

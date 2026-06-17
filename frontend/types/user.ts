@@ -6,6 +6,7 @@ export interface User {
   email: string;
   created_at: string;
   gemini_api_key?: string;
+  groq_api_key?: string;
 }
 
 

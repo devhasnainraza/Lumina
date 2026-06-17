@@ -1,0 +1,31 @@
+services:
+  - type: web
+    name: lumina-backend
+    env: docker
+    dockerfilePath: backend/Dockerfile
+    dockerContext: .
+    plan: free
+    port: 8000
+    disk:
+      name: lumina-data
+      mountPath: /app/data
+      sizeGB: 1
+    envVars:
+      - key: DATABASE_URL
+        sync: false
+        placeholder: "postgresql+asyncpg://user:pass@host:port/db?ssl=require"
+      - key: GEMINI_API_KEY
+        sync: false
+        placeholder: "Your Gemini AI API Key"
+      - key: JWT_SECRET
+        generateValue: true
+      - key: VECTOR_DB_PATH
+        value: /app/data/chromadb
+      - key: UPLOAD_DIR
+        value: /app/data/uploads
+      - key: MODEL_NAME
+        value: gemini-1.5-pro
+      - key: TEMPERATURE
+        value: "0.1"
+      - key: TOP_K
+        value: "5"

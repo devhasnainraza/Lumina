@@ -24,8 +24,8 @@ export function Footer() {
           {/* Column 1: Info */}
           <div className="space-y-4">
             <Link href="/" className="flex items-center gap-2 group">
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-tr from-primary to-secondary transition-transform duration-300 group-hover:scale-105">
-                <Sparkles className="h-4.5 w-4.5 text-white" />
+              <div className="flex h-8 w-8 items-center justify-center transition-transform duration-300 group-hover:scale-110">
+                <img src="/lumina_logo.png" alt="Lumina Logo" className="h-full w-auto object-contain" />
               </div>
               <span className="text-lg font-bold tracking-tight text-white">
                 Lumina

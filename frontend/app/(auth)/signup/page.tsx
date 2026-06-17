@@ -142,9 +142,9 @@ export default function SignupPage() {
               initial={{ scale: 0.8, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               transition={{ delay: 0.1, duration: 0.4 }}
-              className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-secondary/20 border border-secondary/30 mb-4"
+              className="inline-flex items-center justify-center w-16 h-16 mb-4 drop-shadow-[0_0_15px_rgba(6,182,212,0.35)]"
             >
-              <Sparkles className="w-7 h-7 text-secondary" />
+              <img src="/lumina_logo.png" alt="Lumina Logo" className="w-full h-full object-contain" />
             </motion.div>
             <h1 className="text-2xl font-bold text-text-primary mb-1">Create your account</h1>
             <p className="text-text-secondary text-sm">Start chatting with your documents today</p>

@@ -3,8 +3,9 @@
 import { motion } from 'framer-motion';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { documentsApi } from '@/lib/api/documents';
-import { FileText, Trash2, CheckCircle, XCircle, Loader2, Eye } from 'lucide-react';
+import { FileText, Trash2, CheckCircle, XCircle, Loader2, Eye, Pencil } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { toast } from 'sonner';
 import { formatBytes, formatRelativeTime } from '@/lib/utils/format';
 import type { Document } from '@/types/document';
 import { cn } from '@/lib/utils/cn';
@@ -27,6 +28,9 @@ export function DocumentList({ documents }: DocumentListProps) {
   const queryClient = useQueryClient();
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [documentToDelete, setDocumentToDelete] = useState<string | null>(null);
+  const [renameDialogOpen, setRenameDialogOpen] = useState(false);
+  const [documentToRename, setDocumentToRename] = useState<Document | null>(null);
+  const [newFilename, setNewFilename] = useState('');
   const openPreview = usePreviewStore((state) => state.openPreview);
 
   const deleteMutation = useMutation({
@@ -46,6 +50,34 @@ export function DocumentList({ documents }: DocumentListProps) {
   const handleConfirmDelete = () => {
     if (documentToDelete) {
       deleteMutation.mutate(documentToDelete);
+    }
+  };
+
+  const renameMutation = useMutation({
+    mutationFn: ({ id, filename }: { id: string; filename: string }) => documentsApi.rename(id, filename),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['documents'] });
+      setRenameDialogOpen(false);
+      setDocumentToRename(null);
+      setNewFilename('');
+      toast.success('Document renamed successfully');
+    },
+    onError: (err: any) => {
+      const errMsg = err?.response?.data?.detail || err?.message || 'Failed to rename';
+      toast.error(`Rename failed: ${errMsg}`);
+    }
+  });
+
+  const handleRenameClick = (doc: Document) => {
+    setDocumentToRename(doc);
+    setNewFilename(doc.filename);
+    setRenameDialogOpen(true);
+  };
+
+  const handleConfirmRename = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (documentToRename && newFilename.trim()) {
+      renameMutation.mutate({ id: documentToRename.id, filename: newFilename.trim() });
     }
   };
 
@@ -95,6 +127,15 @@ export function DocumentList({ documents }: DocumentListProps) {
                     <Eye className="w-4 h-4" />
                   </Button>
                 )}
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => handleRenameClick(doc)}
+                  className="text-text-muted hover:text-primary hover:bg-white/5 flex-shrink-0 cursor-pointer h-8 w-8 p-0"
+                  title="Rename document"
+                >
+                  <Pencil className="w-3.5 h-3.5" />
+                </Button>
                 <Button
                   variant="ghost"
                   size="sm"
@@ -171,6 +212,50 @@ export function DocumentList({ documents }: DocumentListProps) {
               {deleteMutation.isPending ? 'Deleting...' : 'Delete'}
             </Button>
           </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={renameDialogOpen} onOpenChange={setRenameDialogOpen}>
+        <DialogContent className="sm:max-w-md bg-surface/95 backdrop-blur-xl border border-white/10 rounded-2xl shadow-2xl p-6">
+          <form onSubmit={handleConfirmRename} className="space-y-4">
+            <DialogHeader>
+              <DialogTitle className="text-lg font-bold text-text-primary">Rename Document</DialogTitle>
+              <DialogDescription className="text-xs text-text-muted">
+                Enter a new name for this document. The file type extension must remain the same.
+              </DialogDescription>
+            </DialogHeader>
+
+            <div className="py-2">
+              <input
+                type="text"
+                value={newFilename}
+                onChange={(e) => setNewFilename(e.target.value)}
+                className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/30 transition-all font-medium animate-in fade-in"
+                placeholder="Enter new filename..."
+                required
+                disabled={renameMutation.isPending}
+              />
+            </div>
+
+            <DialogFooter className="gap-2 sm:gap-0">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setRenameDialogOpen(false)}
+                disabled={renameMutation.isPending}
+                className="rounded-xl h-10 text-xs font-semibold cursor-pointer"
+              >
+                Cancel
+              </Button>
+              <Button
+                type="submit"
+                disabled={renameMutation.isPending || !newFilename.trim()}
+                className="bg-primary hover:bg-primary/95 text-white rounded-xl h-10 text-xs font-semibold shadow-md shadow-primary/20 cursor-pointer"
+              >
+                {renameMutation.isPending ? 'Renaming...' : 'Rename'}
+              </Button>
+            </DialogFooter>
+          </form>
         </DialogContent>
       </Dialog>
     </>

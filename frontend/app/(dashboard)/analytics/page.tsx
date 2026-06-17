@@ -7,6 +7,7 @@ import { useAuthStore } from '@/store/authStore';
 import { StatsCard } from '@/components/dashboard/StatsCard';
 import { ActivityChart } from '@/components/analytics/ActivityChart';
 import { DocumentTypesChart } from '@/components/analytics/DocumentTypesChart';
+import { VectorSpaceChart } from '@/components/analytics/VectorSpaceChart';
 import { Card } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { 
@@ -63,7 +64,7 @@ export default function AnalyticsPage() {
       <div className="absolute bottom-20 right-10 w-96 h-96 rounded-full glow-blob-secondary opacity-15 pointer-events-none -z-10" />
       
       {/* Sticky Glassmorphic Header (Scroll to Hide styled, matches chat) */}
-      <header className="glass-navbar sticky top-0 z-30 flex items-center justify-between px-6 py-3.5 pl-16 md:pl-6 min-h-[73px]">
+      <header className="glass-navbar sticky top-0 z-30 flex items-center justify-between px-4 sm:px-6 py-3.5 min-h-[73px] gap-2">
         <div className="flex flex-col min-w-0">
           <h2 className="text-base font-bold text-text-primary truncate">
             Dashboard & Analytics
@@ -258,6 +259,27 @@ export default function AnalyticsPage() {
               </Card>
             </motion.div>
           </div>
+
+          {/* Vector Space Projection Card */}
+          <motion.div
+            initial={{ opacity: 0, y: 15 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.25 }}
+          >
+            <Card className="p-6 bg-surface/45 backdrop-blur-xl border border-white/8 rounded-2xl shadow-xl relative overflow-hidden">
+              <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-primary via-cyan-400 to-indigo-600 opacity-20" />
+              <div className="flex items-center justify-between mb-6">
+                <div>
+                  <h3 className="text-base font-bold text-text-primary">Semantic Vector Space Clusters</h3>
+                  <p className="text-xs text-text-muted mt-0.5">2D PCA projection of vector database segments grouped by topic</p>
+                </div>
+                <div className="p-1.5 bg-primary/10 rounded-lg">
+                  <Database className="w-4 h-4 text-primary" />
+                </div>
+              </div>
+              <VectorSpaceChart />
+            </Card>
+          </motion.div>
 
           {/* AI System Insights & Status Card */}
           <motion.div

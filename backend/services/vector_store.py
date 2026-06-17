@@ -136,3 +136,31 @@ def search_similar(
     except Exception as e:
         logger.error(f"Failed to search similar chunks: {e}")
         raise ValueError(f"Vector search failed: {str(e)}")
+
+
+def update_document_name_in_embeddings(document_id: str, new_name: str) -> None:
+    """
+    Update document_name metadata for all chunks of a document in ChromaDB
+    """
+    try:
+        collection = initialize_collection()
+
+        # Query for all chunks with this document_id
+        results = collection.get(
+            where={"document_id": document_id}
+        )
+
+        if results and results['ids'] and results['metadatas']:
+            updated_metadatas = []
+            for meta in results['metadatas']:
+                new_meta = dict(meta)
+                new_meta["document_name"] = new_name
+                updated_metadatas.append(new_meta)
+
+            collection.update(
+                ids=results['ids'],
+                metadatas=updated_metadatas
+            )
+            logger.info(f"Updated document name to '{new_name}' for {len(results['ids'])} embeddings in ChromaDB")
+    except Exception as e:
+        logger.error(f"Failed to update document name in embeddings: {e}")

@@ -36,13 +36,15 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     return null;
   }
 
+  const isChatRoute = pathname.startsWith('/chat');
+
   return (
     <div className="flex h-screen bg-background overflow-hidden">
       <UnifiedSidebar />
-      <main className="flex-1 overflow-y-auto">
+      <main className="flex-1 overflow-y-auto pb-16 md:pb-0">
         {children}
       </main>
-      <DocumentPreviewModal />
+      {!isChatRoute && <DocumentPreviewModal />}
     </div>
   );
 }

@@ -75,3 +75,8 @@ class ChunkResponse(BaseModel):
     class Config:
         from_attributes = True
 
+
+class DocumentRenameRequest(BaseModel):
+    """Request schema for renaming a document"""
+    filename: str = Field(..., min_length=1, max_length=255, description="New filename for the document")
+

@@ -189,29 +189,12 @@ export function UnifiedSidebar() {
 
   return (
     <>
-      {/* Mobile menu button */}
-      <button
-        onClick={() => setIsMobileOpen(!isMobileOpen)}
-        className="fixed top-4 left-4 z-50 p-2.5 bg-surface/95 backdrop-blur-sm rounded-xl border border-white/10 shadow-lg md:hidden hover:bg-surface-secondary transition-all cursor-pointer"
-      >
-        {isMobileOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
-      </button>
-
-      {/* Mobile overlay */}
-      {isMobileOpen && (
-        <div
-          className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 md:hidden"
-          onClick={() => setIsMobileOpen(false)}
-        />
-      )}
-
-      {/* Sidebar */}
+      {/* Sidebar (Desktop only) */}
       <aside
         className={cn(
           'bg-surface/50 border-r border-white/10 backdrop-blur-xl flex flex-col transition-all duration-300 ease-in-out z-40 relative shadow-2xl shadow-black/25',
           isCollapsed ? 'w-20' : 'w-72',
-          'max-md:fixed max-md:inset-y-0 max-md:left-0 max-md:w-72',
-          isMobileOpen ? 'max-md:translate-x-0' : 'max-md:-translate-x-full'
+          'hidden md:flex'
         )}
       >
         {/* Header */}
@@ -232,7 +215,7 @@ export function UnifiedSidebar() {
           <button
             onClick={() => setIsCollapsed(!isCollapsed)}
             className={cn(
-              "p-2 rounded-lg hover:bg-white/5 transition-all hidden md:flex items-center justify-center cursor-pointer text-text-muted hover:text-text-primary",
+              "p-2 rounded-lg hover:bg-white/5 transition-all flex items-center justify-center cursor-pointer text-text-muted hover:text-text-primary",
               isCollapsed && "mx-auto"
             )}
           >
@@ -252,9 +235,6 @@ export function UnifiedSidebar() {
               <Link
                 key={item.name}
                 href={item.href}
-                onClick={() => {
-                  if (window.innerWidth < 768) setIsMobileOpen(false);
-                }}
                 className={cn(
                   'flex items-center gap-3 px-3.5 py-2.5 rounded-xl border transition-all duration-200 group relative overflow-hidden',
                   isActive
@@ -348,9 +328,36 @@ export function UnifiedSidebar() {
             )}
           </div>
         )}
-
-
       </aside>
+
+      {/* Mobile Bottom Navigation Bar */}
+      <nav className="fixed bottom-0 left-0 right-0 z-40 bg-surface/85 backdrop-blur-xl border-t border-white/10 md:hidden flex justify-around items-center h-16 px-4 pb-safe shadow-2xl">
+        {navigation.map((item) => {
+          const isActive = pathname?.startsWith(item.href);
+          return (
+            <Link
+              key={item.name}
+              href={item.href}
+              className={cn(
+                "flex flex-col items-center justify-center flex-1 h-full py-1 transition-all active:scale-95",
+                isActive ? "text-primary font-bold" : "text-text-secondary hover:text-text-primary"
+              )}
+            >
+              <div className="relative flex items-center justify-center p-1">
+                <item.icon className={cn("w-5.5 h-5.5 transition-colors", isActive ? "text-primary" : "text-text-muted")} />
+                {isActive && (
+                  <motion.div
+                    layoutId="activeBottomNavIndicator"
+                    className="absolute -bottom-1.5 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-primary"
+                    transition={{ type: "spring", stiffness: 350, damping: 25 }}
+                  />
+                )}
+              </div>
+              <span className="text-[9px] tracking-wide mt-1 font-semibold uppercase">{item.name}</span>
+            </Link>
+          );
+        })}
+      </nav>
 
       {/* Delete confirmation dialog */}
       <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>

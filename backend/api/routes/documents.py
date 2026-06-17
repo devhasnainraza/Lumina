@@ -16,12 +16,14 @@ from schemas.document import (
     DocumentList,
     DocumentDetail,
     DocumentDeleteResponse,
-    ChunkResponse
+    ChunkResponse,
+    DocumentRenameRequest
 )
 from api.deps import get_current_user
 from utils.file_validation import validate_file_type, validate_file_size, sanitize_filename
 from utils.storage import save_uploaded_file, get_file_path
 from services.ingestion import process_document, delete_document_data
+from services.vector_store import update_document_name_in_embeddings
 from core.logging import get_logger
 
 logger = get_logger(__name__)
@@ -289,5 +291,57 @@ async def view_document(
         filename=document.filename,
         headers={"Content-Disposition": f'inline; filename="{document.filename}"'}
     )
+
+
+@router.patch("/{document_id}/rename", response_model=DocumentResponse)
+async def rename_document(
+    document_id: UUID,
+    payload: DocumentRenameRequest,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """Rename a document and update its metadata in vector database"""
+    # Fetch document and verify ownership
+    result = await db.execute(
+        select(Document).where(
+            Document.id == document_id,
+            Document.user_id == current_user.id
+        )
+    )
+    document = result.scalar_one_or_none()
+
+    if not document:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Document not found"
+        )
+
+    # Sanitize new filename
+    safe_filename = sanitize_filename(payload.filename)
+    if not safe_filename:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid filename"
+        )
+
+    # Keep original extension to avoid file type mismatches
+    original_ext = os.path.splitext(document.filename)[1].lower()
+    new_ext = os.path.splitext(safe_filename)[1].lower()
+
+    if original_ext != new_ext:
+        safe_filename = os.path.splitext(safe_filename)[0] + original_ext
+
+    old_filename = document.filename
+    document.filename = safe_filename
+
+    # Sync filename change to ChromaDB chunks
+    update_document_name_in_embeddings(str(document_id), safe_filename)
+
+    await db.commit()
+    await db.refresh(document)
+
+    logger.info(f"Document {document_id} renamed from '{old_filename}' to '{safe_filename}' by user {current_user.id}")
+
+    return document
 
 

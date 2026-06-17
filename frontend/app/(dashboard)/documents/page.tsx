@@ -41,7 +41,7 @@ export default function DocumentsPage() {
       <div className="absolute bottom-20 right-10 w-96 h-96 rounded-full glow-blob-secondary opacity-15 pointer-events-none -z-10" />
 
       {/* Sticky Glassmorphic Header (matches chat & analytics) */}
-      <header className="glass-navbar sticky top-0 z-30 flex items-center justify-between px-6 py-3.5 pl-16 md:pl-6 min-h-[73px]">
+      <header className="glass-navbar sticky top-0 z-30 flex items-center justify-between px-4 sm:px-6 py-3.5 min-h-[73px] gap-2">
         <div className="flex flex-col min-w-0">
           <h2 className="text-base font-bold text-text-primary truncate">
             Knowledge Base

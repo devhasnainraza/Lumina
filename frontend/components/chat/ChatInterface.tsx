@@ -4,17 +4,64 @@ import { useState, useRef, useEffect } from 'react';
 import { MessageList } from './MessageList';
 import { ChatInput } from './ChatInput';
 import { useChatStore } from '@/store/chatStore';
-import { useChatSessions, useClearSessionMessages } from '@/lib/hooks/useChat';
-import { Cpu, Trash2, Database, ChevronDown, Thermometer, LogOut } from 'lucide-react';
+import { useChatSessions, useClearSessionMessages, useDeleteSession, useCreateSession } from '@/lib/hooks/useChat';
+import { Cpu, Trash2, Database, ChevronDown, Thermometer, LogOut, Clock, Plus, X, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import type { ChatSession } from '@/types/chat';
 import { useDebounce } from '@/lib/hooks/useDebounce';
 import { useAuthStore } from '@/store/authStore';
 import { useRouter } from 'next/navigation';
+import { usePreviewStore } from '@/store/previewStore';
+import { DocumentPreviewPanel } from '@/components/upload/DocumentPreviewPanel';
+import { motion, AnimatePresence } from 'framer-motion';
+import { cn } from '@/lib/utils/cn';
+import { SessionListItem } from './SessionListItem';
 
 export function ChatInterface() {
   const router = useRouter();
   const { user, logout } = useAuthStore();
+
+  const { isOpen: isPreviewOpen, closePreview } = usePreviewStore();
+  const [previewWidth, setPreviewWidth] = useState(500);
+  const [isMobile, setIsMobile] = useState(false);
+  const isResizing = useRef(false);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+
+  const handleMouseMove = (e: MouseEvent) => {
+    if (!isResizing.current) return;
+    const newWidth = window.innerWidth - e.clientX;
+    if (newWidth > 320 && newWidth < window.innerWidth * 0.75) {
+      setPreviewWidth(newWidth);
+    }
+  };
+
+  const handleMouseUp = () => {
+    isResizing.current = false;
+    document.removeEventListener('mousemove', handleMouseMove);
+    document.removeEventListener('mouseup', handleMouseUp);
+  };
+
+  const handleMouseDown = (e: React.MouseEvent) => {
+    isResizing.current = true;
+    document.addEventListener('mousemove', handleMouseMove);
+    document.addEventListener('mouseup', handleMouseUp);
+  };
+
+  useEffect(() => {
+    return () => {
+      document.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('mouseup', handleMouseUp);
+    };
+  }, []);
   const {
     messages,
     streamingMessage,
@@ -27,13 +74,18 @@ export function ChatInterface() {
     setTemperature,
     topK,
     setTopK,
+    setCurrentSession,
   } = useChatStore();
 
-  const { data: sessionsData } = useChatSessions();
+  const { data: sessionsData, isLoading: sessionsLoading } = useChatSessions();
+  const deleteMutation = useDeleteSession();
+  const createSessionMutation = useCreateSession();
+
   const currentSession = sessionsData?.sessions?.find((s: ChatSession) => s.id === currentSessionId);
   const sessionTitle = currentSession?.title || 'New Conversation';
 
   const [showHeader, setShowHeader] = useState(true);
+  const [showMobileHistory, setShowMobileHistory] = useState(false);
   const lastScrollTop = useRef(0);
 
   const [showSettings, setShowSettings] = useState(false);
@@ -126,6 +178,41 @@ export function ChatInterface() {
 
   const clearSessionMutation = useClearSessionMessages();
 
+  const handleNewChat = () => {
+    if (createSessionMutation.isPending) return;
+    createSessionMutation.mutate(undefined, {
+      onSuccess: (session) => {
+        setCurrentSession(session.id);
+        clearMessages();
+        router.push(`/chat/${session.id}`);
+      },
+      onError: (err) => {
+        console.error('Failed to create new session, falling back to /chat page', err);
+        setCurrentSession(null);
+        clearMessages();
+        router.push('/chat');
+      }
+    });
+  };
+
+  const handleSessionClick = (sessionId: string) => {
+    setCurrentSession(sessionId);
+    router.push(`/chat/${sessionId}`);
+  };
+
+  const handleDeleteClick = (e: React.MouseEvent, sessionId: string) => {
+    e.stopPropagation();
+    if (window.confirm("Are you sure you want to delete this conversation?")) {
+      deleteMutation.mutate(sessionId, {
+        onSuccess: () => {
+          if (sessionId === currentSessionId) {
+            handleNewChat();
+          }
+        }
+      });
+    }
+  };
+
   const handleClearScreen = async () => {
     if (currentSessionId) {
       try {
@@ -140,43 +227,55 @@ export function ChatInterface() {
   };
 
   return (
-    <div className="flex flex-col h-full bg-background relative overflow-hidden">
+    <div className="flex h-full w-full bg-background relative overflow-hidden">
+      <div className="flex-1 flex flex-col h-full min-w-0 relative">
       
       {/* Sticky Header with Glassmorphism (Scroll to Hide) */}
-      <header className={`glass-navbar absolute top-0 left-0 right-0 z-20 flex items-center justify-between px-6 py-3.5 pl-16 md:pl-6 min-h-[73px] transition-transform duration-300 ease-in-out ${
+      <header className={`glass-navbar absolute top-0 left-0 right-0 z-20 flex items-center justify-between px-4 sm:px-6 py-3.5 min-h-[73px] transition-transform duration-300 ease-in-out gap-2 ${
         showHeader ? 'translate-y-0' : '-translate-y-full'
       }`}>
-        <div className="flex items-center gap-3 min-w-0">
-          <div className="flex flex-col min-w-0">
-            <h2 className="text-base font-bold text-text-primary truncate max-w-[200px] sm:max-w-[400px]">
+        <div className="flex items-center gap-2.5 min-w-0 flex-1">
+          {/* Mobile Chat History Drawer Trigger */}
+          <button
+            onClick={() => setShowMobileHistory(true)}
+            className="md:hidden p-2 rounded-xl bg-white/5 border border-white/10 text-text-secondary hover:text-white cursor-pointer shrink-0"
+            title="Chat History"
+          >
+            <Clock className="w-4 h-4" />
+          </button>
+
+          <div className="flex flex-col min-w-0 flex-1">
+            <h2 className="text-sm sm:text-base font-bold text-text-primary truncate">
               {sessionTitle}
             </h2>
             <div className="flex items-center gap-2 mt-0.5">
               <span className="inline-flex items-center gap-1 text-[10px] text-text-muted">
-                <Database className="w-3 h-3 text-primary" />
-                Knowledge Base Connected
+                <Database className="w-3 h-3 text-primary shrink-0" />
+                <span className="hidden sm:inline">Knowledge Base Connected</span>
+                <span className="sm:hidden">Connected</span>
               </span>
-              <span className="w-1.5 h-1.5 rounded-full bg-success animate-pulse" />
+              <span className="w-1.5 h-1.5 rounded-full bg-success animate-pulse shrink-0" />
             </div>
           </div>
         </div>
 
         {/* Actions bar */}
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 shrink-0">
           {/* Active Model Selector with Dropdown Popover */}
-          <div className="relative" ref={settingsRef}>
+          <div className="relative shrink-0" ref={settingsRef}>
             <button
               onClick={() => setShowSettings(!showSettings)}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/5 border border-white/10 text-xs text-text-secondary hover:text-white hover:bg-white/10 hover:border-white/20 transition-all font-medium cursor-pointer"
+              className="flex items-center justify-center gap-1.5 h-9 w-9 sm:w-auto px-0 sm:px-3.5 rounded-xl sm:rounded-full bg-white/5 border border-white/10 text-xs text-text-secondary hover:text-white hover:bg-white/10 hover:border-white/20 transition-all font-medium cursor-pointer"
+              title={`Active Model: ${getModelLabel(activeModel)}`}
             >
-              <Cpu className="w-3.5 h-3.5 text-primary" />
-              <span>{getModelLabel(activeModel)}</span>
-              <ChevronDown className={`w-3 h-3 text-text-muted transition-transform duration-200 ${showSettings ? 'rotate-180' : ''}`} />
+              <Cpu className="w-3.5 h-3.5 text-primary shrink-0" />
+              <span className="hidden sm:inline">{getModelLabel(activeModel)}</span>
+              <ChevronDown className={`w-3 h-3 text-text-muted transition-transform duration-200 shrink-0 hidden sm:inline ${showSettings ? 'rotate-180' : ''}`} />
             </button>
 
             {/* Dropdown Popover */}
             {showSettings && (
-              <div className="absolute right-0 mt-2.5 w-80 bg-surface/95 backdrop-blur-xl border border-white/10 rounded-2xl p-4 shadow-2xl z-30 space-y-3 text-left">
+              <div className="absolute right-[-64px] sm:right-0 mt-2.5 w-[calc(100vw-32px)] min-h-[250px] min-[400px]:w-80 bg-surface/95 backdrop-blur-xl border border-white/10 rounded-2xl p-4 shadow-2xl z-30 space-y-3 text-left origin-top-right">
                 {/* Model Selection */}
                 <div className="space-y-2 bg-white/5 border border-white/5 p-3 rounded-xl">
                   <label className="text-[10px] font-bold uppercase tracking-wider text-text-muted flex items-center gap-1.5">
@@ -279,18 +378,18 @@ export function ChatInterface() {
             size="sm"
             onClick={handleClearScreen}
             disabled={clearSessionMutation.isPending}
-            className="text-text-muted hover:text-white hover:bg-white/5 font-medium text-xs gap-1.5 rounded-xl px-3 h-9 border border-white/5 hover:border-white/10 transition-all cursor-pointer disabled:opacity-50"
+            className="text-text-muted hover:text-white hover:bg-white/5 font-medium text-xs gap-1.5 rounded-xl w-9 md:w-auto px-0 md:px-3 h-9 border border-white/5 hover:border-white/10 transition-all cursor-pointer disabled:opacity-50 flex items-center justify-center shrink-0"
             title="Clear Chat Screen"
           >
-            <Trash2 className="w-3.5 h-3.5" />
+            <Trash2 className="w-3.5 h-3.5 shrink-0" />
             <span className="hidden md:inline">Clear screen</span>
           </Button>
 
           {/* User Profile Selector with Dropdown Popover */}
-          <div className="relative" ref={profileRef}>
+          <div className="relative shrink-0" ref={profileRef}>
             <button
               onClick={() => setShowProfile(!showProfile)}
-              className="w-9 h-9 rounded-xl border border-white/10 cursor-pointer hover:scale-105 active:scale-95 transition-all overflow-hidden flex items-center justify-center bg-surface-secondary shadow-md shadow-primary/10"
+              className="w-9 h-9 rounded-xl border border-white/10 cursor-pointer hover:scale-105 active:scale-95 transition-all overflow-hidden flex items-center justify-center bg-surface-secondary shadow-md shadow-primary/10 shrink-0"
               title="User Profile"
             >
               {avatarUrl ? (
@@ -356,6 +455,120 @@ export function ChatInterface() {
           </div>
         </div>
       </div>
+
+      </div> {/* End of main chat area flex-col */}
+
+      {/* Slide-out Document Previewer */}
+      <AnimatePresence>
+        {isPreviewOpen && (
+          <>
+            {/* Draggable Divider (Desktop Only) */}
+            {!isMobile && (
+              <div
+                onMouseDown={handleMouseDown}
+                className="w-1.5 hover:w-2 bg-white/5 hover:bg-primary/40 cursor-col-resize transition-all h-full z-30 select-none flex-shrink-0 relative"
+                title="Drag to resize workspace"
+              >
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-0.5 h-8 bg-white/20 rounded-full group-hover:bg-primary/60" />
+              </div>
+            )}
+            
+            {/* Preview Panel Container */}
+            <motion.div
+              initial={{ x: isMobile ? '100%' : 200, opacity: 0, width: isMobile ? '100%' : 0 }}
+              animate={{ x: 0, opacity: 1, width: isMobile ? '100%' : previewWidth }}
+              exit={{ x: '100%', opacity: 0, width: 0 }}
+              transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+              className={cn(
+                "h-full flex-shrink-0 shadow-2xl z-40 bg-background",
+                isMobile ? "absolute inset-y-0 right-0 w-full" : "relative"
+              )}
+              style={{ width: isMobile ? '100%' : previewWidth }}
+            >
+              <DocumentPreviewPanel onClose={closePreview} />
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
+
+      {/* Mobile Chat History Drawer (slide-in from left) */}
+      <AnimatePresence>
+        {showMobileHistory && (
+          <>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 md:hidden"
+              onClick={() => setShowMobileHistory(false)}
+            />
+            <motion.div
+              initial={{ x: '-100%' }}
+              animate={{ x: 0 }}
+              exit={{ x: '-100%' }}
+              transition={{ type: 'spring', damping: 25, stiffness: 250 }}
+              className="fixed inset-y-0 left-0 w-72 bg-surface/95 backdrop-blur-xl border-r border-white/10 z-50 md:hidden flex flex-col p-4 shadow-2xl"
+            >
+              {/* Drawer Header */}
+              <div className="flex items-center justify-between pb-4 border-b border-white/10 mb-4">
+                <div className="flex items-center gap-2">
+                  <Clock className="w-4 h-4 text-primary" />
+                  <span className="text-sm font-bold text-text-primary uppercase tracking-wide">History</span>
+                </div>
+                <button
+                  onClick={() => setShowMobileHistory(false)}
+                  className="p-1.5 rounded-lg hover:bg-white/5 text-text-secondary hover:text-white cursor-pointer"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+
+              {/* Actions: New Chat */}
+              <Button
+                onClick={() => {
+                  handleNewChat();
+                  setShowMobileHistory(false);
+                }}
+                disabled={createSessionMutation.isPending}
+                className="w-full bg-gradient-to-r from-primary to-primary/90 hover:from-primary hover:to-primary/85 shadow-lg shadow-primary/25 mb-4 py-2.5 rounded-xl text-xs font-semibold"
+              >
+                {createSessionMutation.isPending ? (
+                  <Loader2 className="w-3.5 h-3.5 mr-2 animate-spin" />
+                ) : (
+                  <Plus className="w-3.5 h-3.5 mr-2" />
+                )}
+                New Chat
+              </Button>
+
+              {/* Conversations List */}
+              <div className="flex-1 overflow-y-auto space-y-1 pr-1">
+                {sessionsLoading ? (
+                  <div className="flex items-center justify-center py-8">
+                    <Loader2 className="w-5 h-5 animate-spin text-text-muted" />
+                  </div>
+                ) : sessionsData?.sessions && sessionsData.sessions.length > 0 ? (
+                  sessionsData.sessions.map((session: ChatSession) => (
+                    <SessionListItem
+                      key={session.id}
+                      session={session}
+                      isActive={session.id === currentSessionId}
+                      onClick={() => {
+                        handleSessionClick(session.id);
+                        setShowMobileHistory(false);
+                      }}
+                      onDelete={(e) => handleDeleteClick(e, session.id)}
+                    />
+                  ))
+                ) : (
+                  <div className="text-center py-8 text-xs text-text-muted">
+                    No conversations yet
+                  </div>
+                )}
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

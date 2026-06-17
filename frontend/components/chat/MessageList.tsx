@@ -20,6 +20,83 @@ interface MessageListProps {
   onScroll?: (scrollTop: number) => void;
 }
 
+const getFollowUps = (content: string): string[] => {
+  if (!content) return [];
+  
+  const contentLower = content.toLowerCase();
+  const followups: string[] = [];
+
+  // 1. Certificate / Education / Training Completion
+  if (
+    contentLower.includes('completed') || 
+    contentLower.includes('certificate') || 
+    contentLower.includes('certification') || 
+    contentLower.includes('course') || 
+    contentLower.includes('program') || 
+    contentLower.includes('training') || 
+    contentLower.includes('exam') ||
+    contentLower.includes('skills')
+  ) {
+    followups.push('What specific skills or topics were covered?');
+    followups.push('When does this certificate expire?');
+    followups.push('Is there any score or grade mentioned in the document?');
+  }
+  // 2. Finance / Numbers / Business Reports
+  else if (
+    contentLower.includes('revenue') || 
+    contentLower.includes('finance') || 
+    contentLower.includes('sales') || 
+    contentLower.includes('profit') || 
+    contentLower.includes('budget') || 
+    contentLower.includes('cost') || 
+    contentLower.includes('expenses') || 
+    contentLower.includes('$') || 
+    contentLower.includes('usd') ||
+    contentLower.includes('margins')
+  ) {
+    followups.push('Can you summarize the financial highlights?');
+    followups.push('What are the main drivers of these figures?');
+    followups.push('Are there any expense breakdowns mentioned?');
+  }
+  // 3. Technical / Code / Architecture
+  else if (
+    contentLower.includes('code') || 
+    contentLower.includes('programming') || 
+    contentLower.includes('function') || 
+    contentLower.includes('database') || 
+    contentLower.includes('api') || 
+    contentLower.includes('bug') || 
+    contentLower.includes('error') || 
+    contentLower.includes('server') ||
+    contentLower.includes('deployment')
+  ) {
+    followups.push('Can you explain how this system or code works?');
+    followups.push('What are the potential edge cases?');
+    followups.push('How can I optimize this implementation?');
+  }
+  // 4. Timelines / Milestones (Strictly project planning triggers)
+  else if (
+    contentLower.includes('milestone') || 
+    contentLower.includes('schedule') || 
+    contentLower.includes('deadline') || 
+    contentLower.includes('timeline') || 
+    contentLower.includes('project plan') || 
+    contentLower.includes('deliverable')
+  ) {
+    followups.push('What are the key milestones in this timeline?');
+    followups.push('Are there any potential delays noted?');
+    followups.push('Who is responsible for the main deliverables?');
+  }
+  // 5. Default General
+  else {
+    followups.push('Can you summarize the key points here?');
+    followups.push('What specific section of the document does this come from?');
+    followups.push('What other key insights are mentioned in this file?');
+  }
+
+  return followups.slice(0, 3);
+};
+
 export const MessageList = memo(function MessageList({ messages, streamingMessage, isStreaming, onSuggestionClick, onScroll }: MessageListProps) {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -215,6 +292,30 @@ export const MessageList = memo(function MessageList({ messages, streamingMessag
       )}
  
       {isStreaming && !streamingMessage && <TypingIndicator key="typing-indicator-bubble" />}
+ 
+      {!isStreaming && messages.length > 0 && messages[messages.length - 1].role === 'assistant' && (
+        <div className="flex flex-col gap-2 max-w-[82%] md:max-w-[70%] ml-11 md:ml-13 mt-2 mb-4 animate-in fade-in slide-in-from-bottom-2 duration-300">
+          <span className="text-[10px] font-extrabold uppercase tracking-wider text-text-muted">
+            Suggested Follow-ups
+          </span>
+          <div className="flex flex-wrap gap-2 mt-1">
+            {getFollowUps(messages[messages.length - 1].content).map((suggestion, index) => (
+              <motion.button
+                key={index}
+                initial={{ opacity: 0, y: 5 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: index * 0.08, duration: 0.25 }}
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                onClick={() => onSuggestionClick?.(suggestion)}
+                className="px-3.5 py-2 rounded-xl bg-surface-secondary/40 border border-white/5 hover:border-primary/40 hover:bg-surface-secondary text-xs text-text-secondary hover:text-white transition-all cursor-pointer shadow-md select-none text-left"
+              >
+                {suggestion}
+              </motion.button>
+            ))}
+          </div>
+        </div>
+      )}
  
       <div key="scroll-anchor" ref={messagesEndRef} />
  

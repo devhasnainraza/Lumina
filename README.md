@@ -1,4 +1,4 @@
-# Lumina: AI-Powered RAG Chatbot with Gemini AI
+# Lumina: AI-Powered RAG Chatbot with LLM Model
 
 Lumina is a premium cognitive search and retrieval-augmented generation (RAG) chatbot system featuring document ingestion and intelligent, citation-grounded conversational capabilities. Users can upload documents (PDFs, DOCX, TXT) and ask complex questions, receiving accurate, structured answers backed by page-level citation tracing.
 

@@ -5,7 +5,6 @@ services:
     dockerfilePath: backend/Dockerfile
     dockerContext: .
     plan: free
-    port: 8000
     disk:
       name: lumina-data
       mountPath: /app/data
@@ -17,6 +16,9 @@ services:
       - key: GEMINI_API_KEY
         sync: false
         placeholder: "Your Gemini AI API Key"
+      - key: GROQ_API_KEY
+        sync: false
+        placeholder: "Your Groq API Key (Optional)"
       - key: JWT_SECRET
         generateValue: true
       - key: VECTOR_DB_PATH

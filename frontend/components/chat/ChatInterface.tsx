@@ -4,7 +4,7 @@ import { useState, useRef, useEffect } from 'react';
 import { MessageList } from './MessageList';
 import { ChatInput } from './ChatInput';
 import { useChatStore } from '@/store/chatStore';
-import { useChatSessions } from '@/lib/hooks/useChat';
+import { useChatSessions, useClearSessionMessages } from '@/lib/hooks/useChat';
 import { Cpu, Trash2, Database, ChevronDown, Thermometer, LogOut } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import type { ChatSession } from '@/types/chat';
@@ -41,6 +41,14 @@ export function ChatInterface() {
 
   const [showProfile, setShowProfile] = useState(false);
   const profileRef = useRef<HTMLDivElement>(null);
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const savedAvatar = localStorage.getItem('pref-user-avatar');
+      setAvatarUrl(savedAvatar);
+    }
+  }, []);
 
   const [localTemperature, setLocalTemperature] = useState(temperature);
   const [localTopK, setLocalTopK] = useState(topK);
@@ -114,6 +122,21 @@ export function ChatInterface() {
   const handleLogout = () => {
     logout();
     router.push('/login');
+  };
+
+  const clearSessionMutation = useClearSessionMessages();
+
+  const handleClearScreen = async () => {
+    if (currentSessionId) {
+      try {
+        await clearSessionMutation.mutateAsync(currentSessionId);
+        clearMessages();
+      } catch (err) {
+        console.error('Failed to clear session messages on backend', err);
+      }
+    } else {
+      clearMessages();
+    }
   };
 
   return (
@@ -254,8 +277,9 @@ export function ChatInterface() {
           <Button
             variant="ghost"
             size="sm"
-            onClick={clearMessages}
-            className="text-text-muted hover:text-white hover:bg-white/5 font-medium text-xs gap-1.5 rounded-xl px-3 h-9 border border-white/5 hover:border-white/10 transition-all cursor-pointer"
+            onClick={handleClearScreen}
+            disabled={clearSessionMutation.isPending}
+            className="text-text-muted hover:text-white hover:bg-white/5 font-medium text-xs gap-1.5 rounded-xl px-3 h-9 border border-white/5 hover:border-white/10 transition-all cursor-pointer disabled:opacity-50"
             title="Clear Chat Screen"
           >
             <Trash2 className="w-3.5 h-3.5" />
@@ -266,18 +290,30 @@ export function ChatInterface() {
           <div className="relative" ref={profileRef}>
             <button
               onClick={() => setShowProfile(!showProfile)}
-              className="w-9 h-9 rounded-xl bg-gradient-to-br from-primary to-indigo-600 flex items-center justify-center shadow-md shadow-primary/25 border border-white/10 text-white cursor-pointer hover:scale-105 active:scale-95 transition-all font-bold text-xs uppercase"
+              className="w-9 h-9 rounded-xl border border-white/10 cursor-pointer hover:scale-105 active:scale-95 transition-all overflow-hidden flex items-center justify-center bg-surface-secondary shadow-md shadow-primary/10"
               title="User Profile"
             >
-              {user?.email?.[0]?.toUpperCase() || 'U'}
+              {avatarUrl ? (
+                <img src={avatarUrl} alt="Avatar" className="w-full h-full object-cover" />
+              ) : (
+                <div className="w-full h-full bg-gradient-to-br from-primary to-indigo-600 flex items-center justify-center text-white font-bold text-xs uppercase">
+                  {user?.email?.[0]?.toUpperCase() || 'U'}
+                </div>
+              )}
             </button>
 
             {/* Profile Dropdown Popover */}
             {showProfile && (
               <div className="absolute right-0 mt-2.5 w-64 bg-surface/95 backdrop-blur-xl border border-white/10 rounded-2xl p-4 shadow-2xl z-30 space-y-3 text-left">
                 <div className="flex items-center gap-3 pb-2.5 border-b border-white/5">
-                  <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-indigo-600 flex items-center justify-center shadow-md shadow-primary/20 text-white font-bold text-sm">
-                    {user?.email?.[0]?.toUpperCase() || 'U'}
+                  <div className="w-10 h-10 rounded-xl border border-white/10 overflow-hidden flex items-center justify-center bg-surface-secondary shadow-md">
+                    {avatarUrl ? (
+                      <img src={avatarUrl} alt="Avatar" className="w-full h-full object-cover" />
+                    ) : (
+                      <div className="w-full h-full bg-gradient-to-br from-primary to-indigo-600 flex items-center justify-center text-white font-bold text-sm">
+                        {user?.email?.[0]?.toUpperCase() || 'U'}
+                      </div>
+                    )}
                   </div>
                   <div className="min-w-0 flex-1">
                     <p className="text-sm font-bold text-text-primary truncate">

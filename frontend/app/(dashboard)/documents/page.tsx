@@ -35,13 +35,13 @@ export default function DocumentsPage() {
   }, [data?.documents, uploads, removeUpload, setError, setStatus]);
 
   return (
-    <div className="relative min-h-screen pb-12 pt-[90px] px-4 md:px-6 max-w-7xl mx-auto overflow-x-hidden">
+    <div className="relative min-h-screen pb-12 overflow-x-hidden">
       {/* Background Radial Glow Blobs */}
       <div className="absolute top-10 left-10 w-80 h-80 rounded-full glow-blob-primary opacity-20 pointer-events-none -z-10" />
       <div className="absolute bottom-20 right-10 w-96 h-96 rounded-full glow-blob-secondary opacity-15 pointer-events-none -z-10" />
 
       {/* Sticky Glassmorphic Header (matches chat & analytics) */}
-      <header className="glass-navbar fixed top-0 left-0 right-0 z-30 flex items-center justify-between px-6 py-3.5 pl-16 md:pl-6 min-h-[73px]">
+      <header className="glass-navbar sticky top-0 z-30 flex items-center justify-between px-6 py-3.5 pl-16 md:pl-6 min-h-[73px]">
         <div className="flex flex-col min-w-0">
           <h2 className="text-base font-bold text-text-primary truncate">
             Knowledge Base
@@ -62,16 +62,16 @@ export default function DocumentsPage() {
         </div>
       </header>
 
-      {error && (
-        <div className="p-4 bg-error/10 border border-error/20 rounded-xl mb-6 flex items-center gap-3 animate-fadeIn">
-          <span className="w-2 h-2 rounded-full bg-error" />
-          <p className="text-error text-xs font-semibold">
-            Failed to load documents. Please refresh and try again.
-          </p>
-        </div>
-      )}
+      <div className="px-4 md:px-6 max-w-7xl mx-auto pt-8 space-y-8 relative z-10">
+        {error && (
+          <div className="p-4 bg-error/10 border border-error/20 rounded-xl flex items-center gap-3 animate-fadeIn">
+            <span className="w-2 h-2 rounded-full bg-error" />
+            <p className="text-error text-xs font-semibold">
+              Failed to load documents. Please refresh and try again.
+            </p>
+          </div>
+        )}
 
-      <div className="space-y-8 relative z-10">
         <DropZone />
 
         <UploadProgress />

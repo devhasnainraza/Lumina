@@ -651,3 +651,51 @@ async def delete_chat_session(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to delete session"
         )
+
+
+@router.delete("/{session_id}/clear", response_model=DeleteSessionResponse)
+async def clear_chat_session_messages(
+    session_id: UUID,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    Clear all messages in a chat session.
+    """
+    try:
+        # Verify session ownership
+        is_owner = await memory_service.verify_session_ownership(
+            session_id=session_id,
+            user_id=current_user.id,
+            db=db
+        )
+
+        if not is_owner:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Session not found"
+            )
+
+        # Delete all messages in the session
+        await db.execute(
+            delete(ChatMessage).where(ChatMessage.session_id == session_id)
+        )
+        await db.commit()
+
+        logger.info(f"Cleared messages for session {session_id}")
+
+        return DeleteSessionResponse(
+            success=True,
+            message="Session messages cleared successfully",
+            session_id=session_id
+        )
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Failed to clear session messages: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to clear session messages"
+        )
+

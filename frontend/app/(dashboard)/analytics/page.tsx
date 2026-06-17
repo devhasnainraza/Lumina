@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAnalytics } from '@/lib/hooks/useAnalytics';
 import { useChatStore } from '@/store/chatStore';
 import { useAuthStore } from '@/store/authStore';
@@ -33,6 +33,14 @@ export default function AnalyticsPage() {
   const [period, setPeriod] = useState<'7d' | '30d'>('7d');
   const { data, isLoading, error } = useAnalytics(period);
   const [showProfile, setShowProfile] = useState(false);
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const savedAvatar = localStorage.getItem('pref-user-avatar');
+      setAvatarUrl(savedAvatar);
+    }
+  }, []);
 
   // Sync active model and settings from Chat store for dynamic insight values
   const { activeModel, temperature, topK } = useChatStore();
@@ -49,13 +57,13 @@ export default function AnalyticsPage() {
   };
 
   return (
-    <div className="relative min-h-screen pb-12 pt-[90px] px-4 md:px-6 max-w-7xl mx-auto overflow-x-hidden">
+    <div className="relative min-h-screen pb-12 overflow-x-hidden">
       {/* Background Radial Glow Blobs */}
       <div className="absolute top-10 left-10 w-80 h-80 rounded-full glow-blob-primary opacity-20 pointer-events-none -z-10" />
       <div className="absolute bottom-20 right-10 w-96 h-96 rounded-full glow-blob-secondary opacity-15 pointer-events-none -z-10" />
       
       {/* Sticky Glassmorphic Header (Scroll to Hide styled, matches chat) */}
-      <header className="glass-navbar fixed top-0 left-0 right-0 z-30 flex items-center justify-between px-6 py-3.5 pl-16 md:pl-6 min-h-[73px]">
+      <header className="glass-navbar sticky top-0 z-30 flex items-center justify-between px-6 py-3.5 pl-16 md:pl-6 min-h-[73px]">
         <div className="flex flex-col min-w-0">
           <h2 className="text-base font-bold text-text-primary truncate">
             Dashboard & Analytics
@@ -99,17 +107,29 @@ export default function AnalyticsPage() {
           <div className="relative">
             <button
               onClick={() => setShowProfile(!showProfile)}
-              className="w-9 h-9 rounded-xl bg-gradient-to-br from-primary to-indigo-600 flex items-center justify-center shadow-md shadow-primary/25 border border-white/10 text-white cursor-pointer hover:scale-105 active:scale-95 transition-all font-bold text-xs uppercase"
+              className="w-9 h-9 rounded-xl border border-white/10 cursor-pointer hover:scale-105 active:scale-95 transition-all overflow-hidden flex items-center justify-center bg-surface-secondary shadow-md shadow-primary/10"
               title="User Profile"
             >
-              {user?.email?.[0]?.toUpperCase() || 'U'}
+              {avatarUrl ? (
+                <img src={avatarUrl} alt="Avatar" className="w-full h-full object-cover" />
+              ) : (
+                <div className="w-full h-full bg-gradient-to-br from-primary to-indigo-600 flex items-center justify-center text-white font-bold text-xs uppercase">
+                  {user?.email?.[0]?.toUpperCase() || 'U'}
+                </div>
+              )}
             </button>
 
             {showProfile && (
               <div className="absolute right-0 mt-2.5 w-64 bg-surface/95 backdrop-blur-xl border border-white/10 rounded-2xl p-4 shadow-2xl z-30 space-y-3 text-left">
                 <div className="flex items-center gap-3 pb-2.5 border-b border-white/5">
-                  <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-indigo-600 flex items-center justify-center shadow-md shadow-primary/20 text-white font-bold text-sm">
-                    {user?.email?.[0]?.toUpperCase() || 'U'}
+                  <div className="w-10 h-10 rounded-xl border border-white/10 overflow-hidden flex items-center justify-center bg-surface-secondary shadow-md">
+                    {avatarUrl ? (
+                      <img src={avatarUrl} alt="Avatar" className="w-full h-full object-cover" />
+                    ) : (
+                      <div className="w-full h-full bg-gradient-to-br from-primary to-indigo-600 flex items-center justify-center text-white font-bold text-sm">
+                        {user?.email?.[0]?.toUpperCase() || 'U'}
+                      </div>
+                    )}
                   </div>
                   <div className="min-w-0 flex-1">
                     <p className="text-sm font-bold text-text-primary truncate">
@@ -131,9 +151,10 @@ export default function AnalyticsPage() {
           </div>
         </div>
       </header>
-
-      {error && (
-        <div className="p-4 bg-error/10 border border-error/20 rounded-xl mb-6 flex items-center gap-3 animate-fadeIn">
+ 
+      <div className="px-4 md:px-6 max-w-7xl mx-auto pt-8 space-y-6 relative z-10">
+        {error && (
+          <div className="p-4 bg-error/10 border border-error/20 rounded-xl flex items-center gap-3 animate-fadeIn">
           <span className="w-2 h-2 rounded-full bg-error" />
           <p className="text-error text-xs font-semibold">
             Failed to load analytics. Please refresh and try again.
@@ -324,6 +345,7 @@ export default function AnalyticsPage() {
           </motion.div>
         </div>
       ) : null}
+      </div>
     </div>
   );
 }

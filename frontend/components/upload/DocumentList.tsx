@@ -3,7 +3,7 @@
 import { motion } from 'framer-motion';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { documentsApi } from '@/lib/api/documents';
-import { FileText, Trash2, CheckCircle, XCircle, Loader2 } from 'lucide-react';
+import { FileText, Trash2, CheckCircle, XCircle, Loader2, Eye } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { formatBytes, formatRelativeTime } from '@/lib/utils/format';
 import type { Document } from '@/types/document';
@@ -17,6 +17,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { useState } from 'react';
+import { usePreviewStore } from '@/store/previewStore';
 
 interface DocumentListProps {
   documents: Document[];
@@ -26,6 +27,7 @@ export function DocumentList({ documents }: DocumentListProps) {
   const queryClient = useQueryClient();
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [documentToDelete, setDocumentToDelete] = useState<string | null>(null);
+  const openPreview = usePreviewStore((state) => state.openPreview);
 
   const deleteMutation = useMutation({
     mutationFn: (documentId: string) => documentsApi.delete(documentId),
@@ -81,14 +83,28 @@ export function DocumentList({ documents }: DocumentListProps) {
                 </div>
               </div>
 
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => handleDeleteClick(doc.id)}
-                className="text-text-muted hover:text-error flex-shrink-0"
-              >
-                <Trash2 className="w-4 h-4" />
-              </Button>
+              <div className="flex items-center gap-1 flex-shrink-0">
+                {doc.status === 'completed' && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => openPreview(doc.id, doc.filename)}
+                    className="text-text-muted hover:text-primary hover:bg-white/5 flex-shrink-0 cursor-pointer h-8 w-8 p-0"
+                    title="Preview document segments"
+                  >
+                    <Eye className="w-4 h-4" />
+                  </Button>
+                )}
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => handleDeleteClick(doc.id)}
+                  className="text-text-muted hover:text-error hover:bg-white/5 flex-shrink-0 cursor-pointer h-8 w-8 p-0"
+                  title="Delete document"
+                >
+                  <Trash2 className="w-4 h-4" />
+                </Button>
+              </div>
             </div>
 
             <div className="flex items-center justify-between">

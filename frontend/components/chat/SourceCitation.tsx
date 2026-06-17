@@ -4,6 +4,7 @@ import { memo, useState } from 'react';
 import { FileText, ExternalLink } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import type { SourceCitation as SourceCitationType } from '@/types/chat';
+import { usePreviewStore } from '@/store/previewStore';
 
 interface SourceCitationProps {
   source: SourceCitationType;
@@ -11,6 +12,13 @@ interface SourceCitationProps {
 
 export const SourceCitation = memo(function SourceCitation({ source }: SourceCitationProps) {
   const [isHovered, setIsHovered] = useState(false);
+  const openPreview = usePreviewStore((state) => state.openPreview);
+
+  const handleClick = () => {
+    if (source.documentId) {
+      openPreview(source.documentId, source.documentName, source.chunkIndex);
+    }
+  };
 
   return (
     <motion.div
@@ -20,7 +28,10 @@ export const SourceCitation = memo(function SourceCitation({ source }: SourceCit
       whileHover={{ y: -2 }}
       transition={{ duration: 0.2 }}
     >
-      <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-surface-secondary/50 backdrop-blur-sm border border-white/10 rounded-lg text-sm hover:bg-surface-secondary/70 hover:border-primary/30 transition-all duration-200 shadow-sm hover:shadow-md hover:shadow-primary/10 cursor-pointer group">
+      <div 
+        onClick={handleClick}
+        className="inline-flex items-center gap-2 px-3 py-1.5 bg-surface-secondary/50 backdrop-blur-sm border border-white/10 rounded-lg text-sm hover:bg-surface-secondary/70 hover:border-primary/30 transition-all duration-200 shadow-sm hover:shadow-md hover:shadow-primary/10 cursor-pointer group"
+      >
         <div className="w-7 h-7 rounded-md bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors">
           <FileText className="w-3.5 h-3.5 text-primary" />
         </div>

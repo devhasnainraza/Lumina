@@ -30,6 +30,19 @@ export interface DocumentDetail extends Document {
 }
 
 /**
+ * Text chunk of a document
+ */
+export interface Chunk {
+  id: string;
+  documentId: string;
+  chunkIndex: number;
+  text: string;
+  tokenCount: number;
+  createdAt: string;
+}
+
+
+/**
  * Document list response with pagination
  */
 export interface DocumentListResponse {

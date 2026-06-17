@@ -1,7 +1,9 @@
+import os
 from fastapi import APIRouter, Depends, HTTPException, status, UploadFile, File, BackgroundTasks, Query
+from fastapi.responses import FileResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, func
-from typing import Optional
+from typing import Optional, List
 from uuid import UUID
 
 from db.session import get_db
@@ -13,7 +15,8 @@ from schemas.document import (
     DocumentResponse,
     DocumentList,
     DocumentDetail,
-    DocumentDeleteResponse
+    DocumentDeleteResponse,
+    ChunkResponse
 )
 from api.deps import get_current_user
 from utils.file_validation import validate_file_type, validate_file_size, sanitize_filename
@@ -209,3 +212,82 @@ async def delete_document(
             "embeddings_deleted": deletion_info["embeddings_deleted"]
         }
     )
+
+
+@router.get("/{document_id}/chunks", response_model=List[ChunkResponse])
+async def get_document_chunks(
+    document_id: UUID,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """Get text chunks of a specific document"""
+    # Fetch document and verify ownership
+    doc_result = await db.execute(
+        select(Document).where(
+            Document.id == document_id,
+            Document.user_id == current_user.id
+        )
+    )
+    document = doc_result.scalar_one_or_none()
+    if not document:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Document not found"
+        )
+
+    # Fetch chunks
+    chunks_result = await db.execute(
+        select(Chunk)
+        .where(Chunk.document_id == document_id)
+        .order_by(Chunk.chunk_index.asc())
+    )
+    chunks = chunks_result.scalars().all()
+    return chunks
+
+
+@router.get("/{document_id}/view")
+async def view_document(
+    document_id: UUID,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """View / stream the original uploaded document file"""
+    # Fetch document and verify ownership
+    result = await db.execute(
+        select(Document).where(
+            Document.id == document_id,
+            Document.user_id == current_user.id
+        )
+    )
+    document = result.scalar_one_or_none()
+    if not document:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Document not found"
+        )
+
+    file_path = document.file_path
+    if not os.path.exists(file_path):
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="File not found on storage"
+        )
+
+    # Determine media type
+    media_type = "application/octet-stream"
+    if document.file_type == FileType.PDF:
+        media_type = "application/pdf"
+    elif document.file_type == FileType.TXT:
+        media_type = "text/plain"
+    elif document.file_type == FileType.DOCX:
+        media_type = "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+
+    # Serve as inline response
+    return FileResponse(
+        path=file_path,
+        media_type=media_type,
+        filename=document.filename,
+        headers={"Content-Disposition": f'inline; filename="{document.filename}"'}
+    )
+
+

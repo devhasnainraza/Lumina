@@ -4,6 +4,7 @@ import { useEffect } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import { useAuth } from '@/lib/hooks/useAuth';
 import { UnifiedSidebar } from '@/components/dashboard/UnifiedSidebar';
+import { DocumentPreviewModal } from '@/components/upload/DocumentPreviewModal';
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
@@ -41,6 +42,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       <main className="flex-1 overflow-y-auto">
         {children}
       </main>
+      <DocumentPreviewModal />
     </div>
   );
 }
+

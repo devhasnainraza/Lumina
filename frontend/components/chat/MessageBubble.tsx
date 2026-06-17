@@ -8,6 +8,7 @@ import { CodeBlock } from './CodeBlock';
 import type { ChatMessage } from '@/types/chat';
 import { cn } from '@/lib/utils/cn';
 import { User, Bot, Copy, Check } from 'lucide-react';
+import { usePreviewStore } from '@/store/previewStore';
 
 interface MessageBubbleProps {
   message: ChatMessage;
@@ -72,9 +73,24 @@ function LiveTimestamp({ timestamp }: { timestamp: string }) {
   return <span className="text-xs text-text-muted/70">{displayTime}</span>;
 }
 
+// Helper to determine if a specific source index (0-based) is cited in the message text (e.g. "Source 1")
+const isSourceCited = (content: string, sourceIndex: number): boolean => {
+  if (!content) return false;
+  const citationNumber = sourceIndex + 1;
+  const regex = new RegExp(`Source\\s*${citationNumber}\\b`, 'i');
+  return regex.test(content);
+};
+
+// Helper to transform [Source X] into markdown link [Source X](#source-x)
+const formatContentCitations = (text: string): string => {
+  if (!text) return '';
+  return text.replace(/\[Source\s*(\d+)\]/gi, (match, num) => `[Source ${num}](#source-${num})`);
+};
+
 export const MessageBubble = memo(function MessageBubble({ message }: MessageBubbleProps) {
   const isUser = message.role === 'user';
   const [isCopied, setIsCopied] = useState(false);
+  const openPreview = usePreviewStore((state) => state.openPreview);
 
   const handleCopy = async () => {
     try {
@@ -158,10 +174,61 @@ export const MessageBubble = memo(function MessageBubble({ message }: MessageBub
                         {children}
                       </code>
                     );
+                  },
+                  strong({ children }) {
+                    return (
+                      <strong className="text-secondary font-extrabold bg-secondary/10 px-1.5 py-0.5 rounded-lg text-[12px] inline-flex items-center border border-secondary/15 shadow-sm my-0.5 uppercase tracking-wide">
+                        {children}
+                      </strong>
+                    );
+                  },
+                  li({ children }) {
+                    return (
+                      <li className="flex items-start gap-2.5 my-2.5 list-none text-text-secondary">
+                        <span className="w-1.5 h-1.5 rounded-full bg-primary mt-2 flex-shrink-0" />
+                        <div className="text-[14px] leading-relaxed flex-1 text-text-secondary/95">{children}</div>
+                      </li>
+                    );
+                  },
+                  ul({ children }) {
+                    return <ul className="pl-0 my-3 space-y-1">{children}</ul>;
+                  },
+                  ol({ children }) {
+                    return <ol className="pl-0 my-3 space-y-1 list-decimal list-inside">{children}</ol>;
+                  },
+                  p({ children }) {
+                    return <p className="my-3 leading-relaxed text-[15px] text-text-primary/95 whitespace-pre-wrap">{children}</p>;
+                  },
+                  a({ href, children }) {
+                    if (href && href.startsWith('#source-')) {
+                      const numStr = href.replace('#source-', '');
+                      const sourceIndex = parseInt(numStr) - 1;
+                      const source = message.sources?.[sourceIndex];
+
+                      const handleSourceClick = () => {
+                        if (source && source.documentId) {
+                          openPreview(source.documentId, source.documentName, source.chunkIndex);
+                        }
+                      };
+
+                      return (
+                        <span 
+                          onClick={handleSourceClick}
+                          className="inline-flex items-center gap-0.5 px-1.5 py-0.5 mx-0.5 rounded bg-primary/20 text-primary border border-primary/30 text-[10px] font-bold uppercase cursor-pointer hover:bg-primary/30 transition-all select-none shadow-sm shadow-primary/5"
+                        >
+                          {children}
+                        </span>
+                      );
+                    }
+                    return (
+                      <a href={href} target="_blank" rel="noopener noreferrer" className="text-secondary hover:underline inline-flex items-center gap-0.5 font-bold">
+                        {children}
+                      </a>
+                    );
                   }
                 }}
               >
-                {message.content}
+                {formatContentCitations(message.content)}
               </ReactMarkdown>
             </div>
           )}
@@ -171,7 +238,7 @@ export const MessageBubble = memo(function MessageBubble({ message }: MessageBub
         {!isUser && message.sources && message.sources.length > 0 && message.sources.some(s => s.documentName && s.documentName !== 'Unknown Document') && (
           <div className="flex flex-wrap gap-2 mt-1">
             {message.sources
-              .filter(s => s.documentName && s.documentName !== 'Unknown Document')
+              .filter((s, index) => s.documentName && s.documentName !== 'Unknown Document' && isSourceCited(message.content, index))
               .map((source, index) => (
                 <SourceCitation
                   key={`${source.documentId}-${source.chunkIndex}-${index}`}

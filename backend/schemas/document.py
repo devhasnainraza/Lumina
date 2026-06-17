@@ -61,3 +61,17 @@ class DocumentDeleteResponse(BaseModel):
     """Response schema for document deletion"""
     message: str = "Document deleted successfully"
     deleted: dict
+
+
+class ChunkResponse(BaseModel):
+    """Response schema for document text chunks"""
+    id: UUID
+    document_id: UUID
+    chunk_index: int
+    text: str
+    token_count: int
+    created_at: datetime
+
+    class Config:
+        from_attributes = True
+

@@ -201,11 +201,11 @@ export function UnifiedSidebar() {
         <div className="p-4 border-b border-white/10 flex items-center justify-between min-h-[73px]">
           {!isCollapsed && (
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-indigo-600 flex items-center justify-center shadow-lg shadow-primary/25 ring-1 ring-white/10">
-                <MessageSquare className="w-5 h-5 text-white" />
+              <div className="w-8 h-8 flex-shrink-0 flex items-center justify-center">
+                <img src="/lumina_logo.png" alt="Lumina Logo" className="h-full w-auto object-contain" />
               </div>
               <div>
-                <h1 className="text-sm font-bold text-text-primary uppercase tracking-wide">AI Chatbot</h1>
+                <h1 className="text-sm font-bold text-text-primary uppercase tracking-wide">Lumina</h1>
                 <p className="text-[10px] text-text-muted mt-0.5 font-medium">Knowledge Assistant</p>
               </div>
             </div>

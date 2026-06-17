@@ -28,7 +28,7 @@ export function Footer() {
                 <Sparkles className="h-4.5 w-4.5 text-white" />
               </div>
               <span className="text-lg font-bold tracking-tight text-white">
-                AI Knowledge
+                Lumina
               </span>
             </Link>
             <p className="text-xs text-text-muted leading-relaxed font-sans">
@@ -130,7 +130,7 @@ export function Footer() {
         </div>
 
         <div className="mt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-center text-xs text-text-muted font-sans">
-          <p>© {new Date().getFullYear()} AI Knowledge Chatbot. All rights reserved.</p>
+          <p>© {new Date().getFullYear()} Lumina. All rights reserved.</p>
           <div className="flex gap-6">
             <a href="#" className="hover:text-white transition-colors">Twitter</a>
             <a href="#" className="hover:text-white transition-colors">GitHub</a>

@@ -19,7 +19,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "AI Knowledge Chatbot",
+  title: "Lumina",
   description: "Premium AI-powered knowledge chatbot with RAG capabilities",
 };
 

@@ -62,7 +62,7 @@ export function Sidebar() {
         )}
       >
         <div className="p-6">
-          <h1 className="text-2xl font-bold text-text-primary">AI Chatbot</h1>
+          <h1 className="text-2xl font-bold text-text-primary">Lumina</h1>
         </div>
 
         <nav className="flex-1 px-4 space-y-1">
@@ -89,7 +89,7 @@ export function Sidebar() {
 
         <div className="p-4 border-t border-white/10">
           <p className="text-xs text-text-muted text-center">
-            © 2026 AI Knowledge Chatbot
+            © 2026 Lumina
           </p>
         </div>
       </aside>

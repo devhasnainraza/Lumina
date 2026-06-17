@@ -35,11 +35,11 @@ export function Navbar() {
       <div className="mx-auto max-w-7xl px-6 lg:px-8">
         <div className="flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2 group">
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-tr from-primary to-secondary transition-transform duration-300 group-hover:scale-110 shadow-primary-sm group-hover:shadow-primary-md">
-              <Sparkles className="h-5 w-5 text-white" />
+            <div className="flex h-8 w-8 items-center justify-center transition-transform duration-300 group-hover:scale-110">
+              <img src="/lumina_logo.png" alt="Lumina Logo" className="h-full w-auto object-contain" />
             </div>
             <span className="text-xl font-bold tracking-tight bg-gradient-to-r from-white via-white to-gray-400 bg-clip-text text-transparent group-hover:opacity-90 transition-opacity">
-              AI Knowledge
+              Lumina
             </span>
           </Link>
 

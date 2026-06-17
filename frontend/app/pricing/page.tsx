@@ -10,7 +10,7 @@ const plans = [
     name: 'Free',
     price: '$0',
     period: 'forever',
-    description: 'Perfect for trying out AI Knowledge Chatbot',
+    description: 'Perfect for trying out Lumina',
     features: [
       '5 documents',
       '100 queries per month',

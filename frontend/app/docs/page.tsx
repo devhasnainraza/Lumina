@@ -9,7 +9,7 @@ const sections = [
     title: 'Getting Started',
     icon: Book,
     items: [
-      { title: 'Introduction', description: 'Learn about AI Knowledge Chatbot and its features' },
+      { title: 'Introduction', description: 'Learn about Lumina and its features' },
       { title: 'Quick Start', description: 'Get up and running in 5 minutes' },
       { title: 'Installation', description: 'Step-by-step installation guide' },
     ],
@@ -58,7 +58,7 @@ export default function DocsPage() {
               Documentation
             </h1>
             <p className="text-lg" style={{ color: '#D1D5DB' }}>
-              Everything you need to know about AI Knowledge Chatbot
+              Everything you need to know about Lumina
             </p>
           </div>
 

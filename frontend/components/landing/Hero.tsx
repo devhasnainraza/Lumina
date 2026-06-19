@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowRight, Sparkles, ShieldCheck, Cpu, Terminal, FileText, Database, MessageSquare, Check } from "lucide-react";
+import { ArrowRight, Sparkles, ShieldCheck, Cpu, MessageSquare, FileText, BarChart3, Settings, Plus, Trash2, Database, ChevronDown, Clock, Menu } from "lucide-react";
 import Link from "next/link";
 
 const suffixes = [
@@ -106,12 +106,12 @@ export function Hero() {
             </Link>
           </motion.div>
 
-          {/* Gorgeous UI Mockup Component */}
+          {/* Real-Dashboard-Matched UI Mockup */}
           <motion.div
             initial={{ opacity: 0, y: 40 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.4 }}
-            className="mt-16 relative rounded-2xl border border-white/10 bg-surface/20 p-2 backdrop-blur-xl shadow-2xl overflow-hidden max-w-4xl mx-auto group"
+            className="mt-16 relative rounded-2xl border border-white/10 bg-surface/20 p-2 backdrop-blur-xl shadow-2xl overflow-hidden max-w-5xl mx-auto group"
           >
             {/* Ambient inner glow */}
             <div className="absolute inset-0 bg-gradient-to-tr from-primary/10 via-transparent to-cyan-500/10 pointer-events-none" />
@@ -123,77 +123,194 @@ export function Hero() {
                 <div className="w-2.5 h-2.5 rounded-full bg-yellow-500/60" />
                 <div className="w-2.5 h-2.5 rounded-full bg-green-500/60" />
               </div>
-              <div className="flex items-center gap-1 bg-white/5 px-4 py-1 rounded-md text-[10px] text-text-muted font-mono w-48 mx-auto truncate">
+              <div className="flex items-center gap-1 bg-white/5 px-4 py-1 rounded-md text-[10px] text-text-muted font-mono w-64 mx-auto truncate">
                 <ShieldCheck className="w-3 h-3 text-cyan-400 shrink-0" />
-                <span>lumina.ai/chat/rag-workspace</span>
+                <span>lumina-free.vercel.app/chat</span>
               </div>
               <div className="w-12" />
             </div>
 
-            {/* Dashboard Mockup Grid Layout */}
-            <div className="grid grid-cols-12 gap-3 p-4 bg-[#0a0d17]/90 min-h-[320px] text-left text-sm rounded-b-xl relative font-sans">
+            {/* Real Dashboard Grid Layout */}
+            <div className="grid grid-cols-12 bg-[#090b15] min-h-[480px] text-left text-sm rounded-b-xl relative font-sans overflow-hidden">
               
-              {/* Sidebar Panel */}
-              <div className="col-span-3 hidden md:flex flex-col gap-2.5 border-r border-white/5 pr-3">
-                <div className="flex items-center gap-2 p-1 bg-white/5 rounded-xl border border-white/5">
-                  <div className="w-5 h-5 rounded bg-primary/20 flex items-center justify-center">
-                    <Database className="w-3 h-3 text-primary" />
+              {/* Sidebar Panel (Desktop layout) */}
+              <div className="col-span-3 hidden md:flex flex-col border-r border-white/5 bg-surface/10 p-3.5 space-y-4">
+                {/* Header info matching dashboard */}
+                <div className="flex items-center gap-2.5 pb-3 border-b border-white/5 shrink-0">
+                  <div className="w-7 h-7 flex-shrink-0 flex items-center justify-center">
+                    <img src="/lumina_logo.png" alt="Lumina Logo" className="h-full w-auto object-contain" />
                   </div>
-                  <span className="text-[10px] font-bold uppercase text-white tracking-wider">Vector Space</span>
-                </div>
-                <div className="space-y-1.5 flex-1">
-                  <div className="p-2 rounded-lg bg-primary/10 border border-primary/20 flex items-center gap-2 text-white text-xs font-semibold">
-                    <MessageSquare className="w-3.5 h-3.5 text-primary" />
-                    <span>RAG Document Q&A</span>
-                  </div>
-                  <div className="p-2 rounded-lg hover:bg-white/5 flex items-center gap-2 text-text-secondary text-xs">
-                    <FileText className="w-3.5 h-3.5 text-text-muted" />
-                    <span>Upload blueprints.pdf</span>
+                  <div>
+                    <h4 className="text-xs font-bold text-white uppercase tracking-wider">LUMINA</h4>
+                    <p className="text-[9px] text-text-muted mt-0.5">Knowledge Assistant</p>
                   </div>
                 </div>
+
+                {/* Primary page tabs */}
+                <div className="space-y-1 shrink-0">
+                  <div className="flex items-center gap-3 px-3 py-2 bg-gradient-to-r from-primary/15 via-primary/5 to-transparent border border-primary/35 text-white text-xs font-bold rounded-xl relative">
+                    <div className="absolute left-0 top-1/4 bottom-1/4 w-0.75 rounded-r bg-primary" />
+                    <MessageSquare className="w-4 h-4 text-primary" />
+                    <span>Chat</span>
+                  </div>
+                  <div className="flex items-center gap-3 px-3 py-2 hover:bg-white/5 text-text-secondary hover:text-white text-xs rounded-xl transition-all">
+                    <FileText className="w-4 h-4 text-text-muted" />
+                    <span>Documents</span>
+                  </div>
+                  <div className="flex items-center gap-3 px-3 py-2 hover:bg-white/5 text-text-secondary hover:text-white text-xs rounded-xl transition-all">
+                    <BarChart3 className="w-4 h-4 text-text-muted" />
+                    <span>Analytics</span>
+                  </div>
+                  <div className="flex items-center gap-3 px-3 py-2 hover:bg-white/5 text-text-secondary hover:text-white text-xs rounded-xl transition-all">
+                    <Settings className="w-4 h-4 text-text-muted" />
+                    <span>Settings</span>
+                  </div>
+                </div>
+
+                {/* Conversation List section matching actual app */}
+                <div className="flex-1 flex flex-col min-h-0 pt-2 border-t border-white/5 overflow-hidden">
+                  <div className="flex items-center justify-between text-[10px] font-bold text-text-muted uppercase tracking-wider px-2 pb-2">
+                    <span>Conversations</span>
+                    <Plus className="w-3.5 h-3.5 text-text-muted hover:text-white cursor-pointer" />
+                  </div>
+                  
+                  <div className="space-y-1 flex-1 overflow-y-auto pr-1">
+                    <div className="p-2.5 rounded-xl bg-white/[0.02] border border-white/5 text-text-secondary hover:text-white text-[11px] font-medium leading-tight">
+                      <span className="block truncate">Summarize my docum...</span>
+                      <span className="text-[9px] text-text-muted mt-0.5 block">21m ago • 2 messages</span>
+                    </div>
+
+                    <div className="p-2.5 rounded-xl bg-gradient-to-r from-primary/15 via-primary/5 to-transparent border border-primary/30 text-white text-[11px] font-bold leading-tight relative">
+                      <div className="absolute left-0 top-1/4 bottom-1/4 w-0.75 rounded-r bg-primary" />
+                      <span className="block truncate">Extract key insights</span>
+                      <span className="text-[9px] text-primary mt-0.5 block">6h ago • 0 messages</span>
+                    </div>
+
+                    <div className="p-2.5 rounded-xl bg-white/[0.02] border border-white/5 text-text-secondary hover:text-white text-[11px] font-medium leading-tight">
+                      <span className="block truncate">Summarize my docum...</span>
+                      <span className="text-[9px] text-text-muted mt-0.5 block">6h ago • 2 messages</span>
+                    </div>
+
+                    <div className="p-2.5 rounded-xl bg-white/[0.02] border border-white/5 text-text-secondary hover:text-white text-[11px] font-medium leading-tight">
+                      <span className="block truncate">Hello</span>
+                      <span className="text-[9px] text-text-muted mt-0.5 block">7h ago • 4 messages</span>
+                    </div>
+                  </div>
+                </div>
+
               </div>
 
-              {/* Central Chat Panel */}
-              <div className="col-span-12 md:col-span-9 flex flex-col justify-between min-h-[280px]">
+              {/* Main Panel Content Area */}
+              <div className="col-span-12 md:col-span-9 flex flex-col justify-between min-h-[480px] bg-[#070911]/95 relative p-4.5">
                 
-                {/* Simulated message bubbles */}
-                <div className="space-y-3.5 flex-1 overflow-hidden pr-2">
-                  <div className="flex justify-end">
-                    <div className="bg-gradient-to-r from-primary to-indigo-600 text-white text-xs px-3.5 py-2 rounded-2xl rounded-tr-none max-w-sm shadow-md">
-                      Summarize the primary terms of our user licensing agreement.
+                {/* Header bar matching actual dashboard layout */}
+                <div className="flex items-center justify-between pb-3.5 border-b border-white/5 mb-4 shrink-0 gap-2">
+                  <div className="flex items-center gap-2 min-w-0 flex-1">
+                    {/* Mockup Mobile Clock Button */}
+                    <div className="md:hidden p-1.5 rounded-lg bg-white/5 border border-white/10 text-text-secondary shrink-0">
+                      <Clock className="w-3.5 h-3.5" />
                     </div>
-                  </div>
-
-                  <div className="flex gap-2.5 items-start">
-                    <div className="w-6 h-6 rounded-lg bg-gradient-to-br from-primary to-indigo-600 flex items-center justify-center shrink-0">
-                      <Sparkles className="w-3 h-3 text-white" />
-                    </div>
-                    <div className="bg-white/5 border border-white/10 text-text-secondary text-xs px-3.5 py-2.5 rounded-2xl rounded-tl-none max-w-md space-y-2">
-                      <p>Here are the key licensing guidelines outlined in your document:</p>
-                      <ul className="space-y-1.5 pl-3 list-disc text-[11px] text-text-secondary/90">
-                        <li>You retain complete ownership of all raw data uploaded.</li>
-                        <li>Embeddings are strictly encrypted in an isolated pgvector database.</li>
-                      </ul>
-                      <div className="flex flex-wrap gap-1.5 mt-2">
-                        <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-primary/20 text-[9px] font-bold text-primary border border-primary/30 uppercase">
-                          Source 1 • Page 4
-                        </span>
-                        <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-primary/20 text-[9px] font-bold text-primary border border-primary/30 uppercase">
-                          Source 2 • Page 7
-                        </span>
+                    <div className="min-w-0 flex-1">
+                      <h3 className="text-xs font-bold text-white truncate">Extract key insights</h3>
+                      <div className="flex items-center gap-1.5 mt-0.5">
+                        <span className="w-1.5 h-1.5 rounded-full bg-success animate-pulse shrink-0" />
+                        <span className="text-[9px] text-text-muted">Connected</span>
                       </div>
                     </div>
                   </div>
+
+                  <div className="flex items-center gap-1.5 shrink-0">
+                    {/* Model Select */}
+                    <div className="flex items-center gap-1 px-1.5 py-1 md:px-2.5 md:py-1 bg-white/5 border border-white/10 rounded-lg text-[9px] font-semibold text-text-primary">
+                      <Cpu className="w-3.5 h-3.5 text-primary shrink-0" />
+                      <span className="hidden md:inline">Gemini 1.5 Pro</span>
+                    </div>
+                    {/* Clear button */}
+                    <div className="flex items-center justify-center w-6 h-6 md:w-auto md:h-auto md:px-2.5 md:py-1 bg-white/5 border border-white/10 rounded-lg text-[9px] font-semibold text-text-muted hover:text-white cursor-pointer">
+                      <Trash2 className="w-3 h-3" />
+                      <span className="hidden md:inline ml-1">Clear screen</span>
+                    </div>
+                    {/* Mobile: Hamburger menu, Desktop: User Profile Avatar */}
+                    <div className="md:hidden w-6 h-6 rounded-lg border border-white/10 flex items-center justify-center bg-white/5 text-text-secondary">
+                      <Menu className="w-3.5 h-3.5" />
+                    </div>
+                    <div className="hidden md:flex w-6.5 h-6.5 rounded-lg bg-gradient-to-br from-primary to-indigo-600 items-center justify-center text-white font-bold text-[10px] uppercase shrink-0">
+                      H
+                    </div>
+                  </div>
                 </div>
 
-                {/* Simulated chat input */}
-                <div className="mt-4 pt-3 border-t border-white/5 flex gap-2">
-                  <div className="flex-1 bg-white/5 border border-white/10 rounded-xl px-3.5 py-2 text-xs text-text-muted flex items-center justify-between">
-                    <span>Ask about your uploaded documents...</span>
-                    <Terminal className="w-3.5 h-3.5 text-text-muted" />
+                {/* Simulated message bubbles matching chat screenshots */}
+                <div className="flex-1 overflow-y-auto space-y-4 pr-1.5 min-w-0">
+                  
+                  {/* User message */}
+                  <div className="flex justify-end gap-2.5 items-start">
+                    <div className="flex flex-col items-end">
+                      <div className="bg-gradient-to-br from-primary to-indigo-600 text-white text-xs px-4 py-2.5 rounded-2xl rounded-tr-none max-w-sm shadow-md font-semibold">
+                        Extract key insights
+                      </div>
+                      <span className="text-[9px] text-text-muted mt-1">Just now</span>
+                    </div>
+                    <div className="w-6 h-6 rounded-lg bg-gradient-to-br from-cyan-400 to-secondary flex items-center justify-center shrink-0">
+                      <span className="text-white font-bold text-[9px]">U</span>
+                    </div>
                   </div>
-                  <div className="w-8 h-8 rounded-xl bg-primary flex items-center justify-center shrink-0">
-                    <ArrowRight className="w-4 h-4 text-white" />
+
+                  {/* Assistant response */}
+                  <div className="flex gap-2.5 items-start">
+                    <div className="w-6.5 h-6.5 rounded-lg bg-gradient-to-br from-primary to-indigo-600 flex items-center justify-center shrink-0">
+                      <Sparkles className="w-3.5 h-3.5 text-white animate-pulse" />
+                    </div>
+                    <div className="flex-1 flex flex-col gap-1.5 max-w-[85%]">
+                      <div className="bg-white/5 border border-white/10 text-text-secondary text-xs px-4 py-3 rounded-2xl rounded-tl-none shadow-lg space-y-3 font-sans leading-relaxed">
+                        <p className="text-text-primary">Based on the provided context, here are the key insights:</p>
+                        
+                        <ul className="space-y-3 pl-0 my-3">
+                          <li className="flex items-start gap-2">
+                            <span className="w-1.5 h-1.5 rounded-full bg-primary mt-2 flex-shrink-0" />
+                            <div className="text-[11px] leading-relaxed text-text-secondary/95">
+                              <span className="bg-cyan-950/80 text-cyan-400 border border-cyan-800/40 rounded-md px-1.5 py-0.5 font-bold uppercase text-[9px] mr-1.5 inline-block shadow-sm">
+                                EXAM SCHEDULE
+                              </span>
+                              The documents appear to be exam schedules for the Secondary School Certificate (SSC) exams, specifically for the Science Group and General Group.
+                            </div>
+                          </li>
+                          <li className="flex items-start gap-2">
+                            <span className="w-1.5 h-1.5 rounded-full bg-primary mt-2 flex-shrink-0" />
+                            <div className="text-[11px] leading-relaxed text-text-secondary/95">
+                              <span className="bg-cyan-950/80 text-cyan-400 border border-cyan-800/40 rounded-md px-1.5 py-0.5 font-bold uppercase text-[9px] mr-1.5 inline-block shadow-sm">
+                                EXAM DATES
+                              </span>
+                              The exam dates range from April 10, 2026, to May 6, 2026.
+                            </div>
+                          </li>
+                          <li className="flex items-start gap-2">
+                            <span className="w-1.5 h-1.5 rounded-full bg-primary mt-2 flex-shrink-0" />
+                            <div className="text-[11px] leading-relaxed text-text-secondary/95">
+                              <span className="bg-cyan-950/80 text-cyan-400 border border-cyan-800/40 rounded-md px-1.5 py-0.5 font-bold uppercase text-[9px] mr-1.5 inline-block shadow-sm">
+                                EXAM TIMING
+                              </span>
+                              The exam timing is 2:30 PM to 5:30 PM for most days, with some exceptions.
+                            </div>
+                          </li>
+                        </ul>
+                      </div>
+                      <span className="text-[9px] text-text-muted mt-0.5">Just now</span>
+                    </div>
+                  </div>
+
+                </div>
+
+                {/* Simulated chat input matching actual dashboard styling */}
+                <div className="mt-4 pt-3.5 border-t border-white/5 flex gap-2.5 items-center shrink-0">
+                  <div className="flex-1 bg-[#101323] border border-white/10 rounded-xl px-4 py-2.5 text-xs text-text-muted flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <Plus className="w-4 h-4 text-text-muted" />
+                      <span>Chat with your documents...</span>
+                    </div>
+                  </div>
+                  <div className="w-8.5 h-8.5 rounded-full bg-primary/25 border border-primary/40 flex items-center justify-center shrink-0 cursor-pointer shadow-md">
+                    <ArrowRight className="w-4.5 h-4.5 text-primary" />
                   </div>
                 </div>
 

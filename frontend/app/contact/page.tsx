@@ -28,7 +28,7 @@ export default function ContactPage() {
     // Trigger native mail client dispatch fallback
     const mailtoSubject = `Lumina Contact: ${subject.toUpperCase()} - ${name}`;
     const mailtoBody = `Name: ${name}\nEmail: ${email}\nInquiry Type: ${subject}\n\nMessage:\n${message}`;
-    const mailtoUrl = `mailto:support@lumina.ai?subject=${encodeURIComponent(mailtoSubject)}&body=${encodeURIComponent(mailtoBody)}`;
+    const mailtoUrl = `mailto:support@lumina-free.vercel.app?subject=${encodeURIComponent(mailtoSubject)}&body=${encodeURIComponent(mailtoBody)}`;
     
     window.location.href = mailtoUrl;
 
@@ -72,8 +72,8 @@ export default function ContactPage() {
                 <p className="text-xs text-text-secondary leading-relaxed font-sans">
                   For account access questions, billing issues, or feature requests, contact support directly at:
                 </p>
-                <a href="mailto:support@lumina.ai" className="text-sm font-bold text-primary hover:underline">
-                  support@lumina.ai
+                <a href="mailto:support@lumina-free.vercel.app" className="text-sm font-bold text-primary hover:underline">
+                  support@lumina-free.vercel.app
                 </a>
               </div>
 

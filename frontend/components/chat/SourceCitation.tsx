@@ -35,12 +35,12 @@ export const SourceCitation = memo(function SourceCitation({ source }: SourceCit
         <div className="w-7 h-7 rounded-md bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors">
           <FileText className="w-3.5 h-3.5 text-primary" />
         </div>
-        <div className="flex flex-col">
-          <span className="text-text-secondary group-hover:text-text-primary transition-colors font-medium leading-tight">
+        <div className="flex flex-col min-w-0">
+          <span className="text-text-secondary group-hover:text-text-primary transition-colors font-medium leading-tight truncate max-w-[120px] sm:max-w-[200px] md:max-w-[300px]">
             {source.documentName}
           </span>
           {source.pageReference && (
-            <span className="text-text-muted text-xs">
+            <span className="text-text-muted text-xs truncate max-w-[120px] sm:max-w-[200px] md:max-w-[300px]">
               {source.pageReference}
             </span>
           )}

@@ -330,34 +330,7 @@ export function UnifiedSidebar() {
         )}
       </aside>
 
-      {/* Mobile Bottom Navigation Bar */}
-      <nav className="fixed bottom-0 left-0 right-0 z-40 bg-surface/85 backdrop-blur-xl border-t border-white/10 md:hidden flex justify-around items-center h-16 px-4 pb-safe shadow-2xl">
-        {navigation.map((item) => {
-          const isActive = pathname?.startsWith(item.href);
-          return (
-            <Link
-              key={item.name}
-              href={item.href}
-              className={cn(
-                "flex flex-col items-center justify-center flex-1 h-full py-1 transition-all active:scale-95",
-                isActive ? "text-primary font-bold" : "text-text-secondary hover:text-text-primary"
-              )}
-            >
-              <div className="relative flex items-center justify-center p-1">
-                <item.icon className={cn("w-5.5 h-5.5 transition-colors", isActive ? "text-primary" : "text-text-muted")} />
-                {isActive && (
-                  <motion.div
-                    layoutId="activeBottomNavIndicator"
-                    className="absolute -bottom-1.5 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-primary"
-                    transition={{ type: "spring", stiffness: 350, damping: 25 }}
-                  />
-                )}
-              </div>
-              <span className="text-[9px] tracking-wide mt-1 font-semibold uppercase">{item.name}</span>
-            </Link>
-          );
-        })}
-      </nav>
+
 
       {/* Delete confirmation dialog */}
       <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>

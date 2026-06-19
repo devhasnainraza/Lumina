@@ -117,12 +117,12 @@ export const MessageBubble = memo(function MessageBubble({ message }: MessageBub
       )}
 
       {/* Bubble Container */}
-      <div className={cn('flex flex-col gap-1.5 max-w-[82%] md:max-w-[70%]', isUser && 'items-end')}>
+      <div className={cn('flex flex-col gap-1.5 max-w-[82%] md:max-w-[70%] min-w-0', isUser && 'items-end')}>
         
         {/* Content Bubble */}
         <div
           className={cn(
-            'rounded-2xl px-4.5 py-3 text-base transition-all duration-300 relative group/bubble',
+            'rounded-2xl px-4.5 py-3 text-base transition-all duration-300 relative group/bubble w-full min-w-0',
             isUser
               ? 'bg-gradient-to-br from-primary via-indigo-600 to-primary/80 text-white rounded-tr-none shadow-[0_4px_16px_rgba(124,58,237,0.2)] border border-primary/20'
               : 'bg-surface/50 backdrop-blur-md border border-white/10 text-text-primary rounded-tl-none shadow-lg relative before:absolute before:inset-0 before:rounded-2xl before:rounded-tl-none before:bg-gradient-to-br before:from-white/[0.02] before:to-transparent before:pointer-events-none'
@@ -146,9 +146,9 @@ export const MessageBubble = memo(function MessageBubble({ message }: MessageBub
             </button>
           </div>
           {isUser ? (
-            <p className="whitespace-pre-wrap text-[15px] leading-relaxed font-medium">{message.content}</p>
+            <p className="whitespace-pre-wrap text-[15px] leading-relaxed font-medium break-words w-full min-w-0">{message.content}</p>
           ) : (
-            <div className="prose prose-invert prose-base max-w-none prose-headings:font-bold prose-headings:tracking-tight prose-p:leading-relaxed prose-p:text-[15px] prose-p:text-text-primary prose-strong:font-semibold prose-strong:text-white relative z-10">
+            <div className="prose prose-invert prose-base max-w-none prose-headings:font-bold prose-headings:tracking-tight prose-p:leading-relaxed prose-p:text-[15px] prose-p:text-text-primary prose-strong:font-semibold prose-strong:text-white relative z-10 break-words w-full min-w-0">
               <ReactMarkdown
                 components={{
                   pre({ children }) {

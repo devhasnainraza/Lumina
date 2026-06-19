@@ -32,6 +32,7 @@ import { useState, useEffect } from 'react';
 import { authApi } from '@/lib/api/auth';
 import { toast } from 'sonner';
 import { useRouter } from 'next/navigation';
+import { motion } from 'framer-motion';
 import {
   Dialog,
   DialogContent,
@@ -869,15 +870,19 @@ export default function SettingsPage() {
                 <button
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id as any)}
-                  className={`w-full flex items-center justify-between px-3.5 py-3 rounded-lg text-left transition-all duration-200 group ${isActive
-                      ? 'bg-primary/20 text-white border border-primary/30 shadow-primary-sm'
-                      : 'text-text-secondary hover:text-white hover:bg-white/5 border border-transparent'
-                    }`}
+                  className="w-full flex items-center justify-between px-3.5 py-3 rounded-lg text-left transition-all duration-200 group relative cursor-pointer"
                 >
-                  <div className="flex items-center gap-3">
-                    <Icon className={`w-4 h-4 transition-transform group-hover:scale-115 ${isActive ? 'text-primary' : 'text-text-muted'}`} />
+                  {isActive && (
+                    <motion.div
+                      layoutId="activeSettingsTab"
+                      className="absolute inset-0 bg-primary/15 border border-primary/30 rounded-lg shadow-sm"
+                      transition={{ type: "spring", stiffness: 380, damping: 30 }}
+                    />
+                  )}
+                  <div className="flex items-center gap-3 relative z-10">
+                    <Icon className={`w-4 h-4 transition-transform group-hover:scale-110 ${isActive ? 'text-primary' : 'text-text-muted'}`} />
                     <div>
-                      <p className="text-xs font-semibold">{tab.label}</p>
+                      <p className="text-xs font-semibold text-text-primary">{tab.label}</p>
                       <p className="text-[9px] text-text-muted line-clamp-1 mt-0.5">{tab.desc}</p>
                     </div>
                   </div>

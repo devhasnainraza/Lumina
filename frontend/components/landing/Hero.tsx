@@ -25,8 +25,8 @@ export function Hero() {
   return (
     <section className="relative overflow-hidden pt-36 pb-24 bg-grid-pattern">
       {/* Glow backgrounds */}
-      <div className="absolute top-10 left-1/4 -z-10 h-96 w-96 rounded-full glow-blob-primary opacity-60 animate-pulse duration-5000" />
-      <div className="absolute top-24 right-1/4 -z-10 h-96 w-96 rounded-full glow-blob-secondary opacity-60 animate-pulse duration-5000" style={{ animationDelay: "2.5s" }} />
+      <div className="absolute top-10 left-1/4 -z-10 h-96 w-96 rounded-full glow-blob-primary opacity-60 animate-[pulse_12s_infinite_alternate]" />
+      <div className="absolute top-24 right-1/4 -z-10 h-96 w-96 rounded-full glow-blob-secondary opacity-60 animate-[pulse_12s_infinite_alternate]" style={{ animationDelay: "4s" }} />
 
       <div className="relative mx-auto max-w-7xl px-6 lg:px-8">
         <div className="mx-auto max-w-4xl text-center">

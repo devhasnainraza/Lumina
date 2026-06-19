@@ -24,6 +24,9 @@ export function StatsCard({ title, value, icon: Icon, trend, trendType = 'up' }:
       whileHover={{ y: -4, scale: 1.01 }}
     >
       <Card className="relative overflow-hidden p-6 bg-surface/45 backdrop-blur-xl border border-white/8 hover:border-primary/45 transition-all duration-300 shadow-[0_8px_30px_rgb(0,0,0,0.12)] hover:shadow-[0_12px_40px_rgba(124,58,237,0.15)] group">
+        {/* Animated Accent Line at Top */}
+        <div className="absolute top-0 left-0 right-0 h-[3px] bg-gradient-to-r from-primary to-indigo-500 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-500 origin-left" />
+
         {/* Glow border overlay effect */}
         <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
 

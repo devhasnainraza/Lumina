@@ -121,7 +121,7 @@ export function ChatInput() {
               ref={textareaRef}
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              placeholder="Ask anything about your uploaded documents... "
+              placeholder="Chat with your documents..."
               disabled={isStreaming}
               rows={1}
               className="flex-1 min-h-[36px] max-h-[120px] py-2 px-2.5 bg-transparent border-0 outline-none focus:outline-none focus:ring-0 focus-visible:outline-none focus-visible:ring-0 text-text-primary placeholder:text-text-muted/40 resize-none font-sans text-[14px] leading-normal"

@@ -12,16 +12,16 @@ interface StreamingMessageProps {
 
 export function StreamingMessage({ content }: StreamingMessageProps) {
   return (
-    <div className="flex gap-3 md:gap-4 justify-start">
+    <div className="flex gap-3 md:gap-4 justify-start w-full min-w-0">
       {/* Bot Icon */}
-      <div className="w-8 h-8 md:w-9 md:h-9 rounded-xl bg-gradient-to-br from-primary via-primary/90 to-indigo-600 flex items-center justify-center flex-shrink-0 shadow-lg shadow-primary/20 ring-2 ring-primary/20 relative before:absolute before:inset-0 before:rounded-xl before:bg-gradient-to-t before:from-transparent before:to-white/20">
+      <div className="w-8 h-8 md:w-9 md:h-9 rounded-xl bg-gradient-to-br from-primary via-primary/90 to-indigo-600 flex items-center justify-center flex-shrink-0 shadow-lg shadow-primary/20 ring-2 ring-primary/20 relative before:absolute before:inset-0 before:rounded-xl before:bg-gradient-to-t before:from-transparent before:to-white/20 animate-pulse">
         <Bot className="w-4 h-4 md:w-5 md:h-5 text-white" />
       </div>
 
-      <div className="flex flex-col gap-1.5 max-w-[82%] md:max-w-[70%]">
+      <div className="flex flex-col gap-1.5 max-w-[82%] md:max-w-[70%] min-w-0">
         {/* Content Bubble */}
-        <div className="rounded-2xl px-4.5 py-3 text-base bg-surface/50 backdrop-blur-md border border-white/10 text-text-primary rounded-tl-none shadow-lg relative before:absolute before:inset-0 before:rounded-2xl before:rounded-tl-none before:bg-gradient-to-br before:from-white/[0.02] before:to-transparent before:pointer-events-none">
-          <div className="prose prose-invert prose-base max-w-none prose-headings:font-bold prose-headings:tracking-tight prose-p:leading-relaxed prose-p:text-[15px] prose-p:text-text-primary prose-strong:font-semibold prose-strong:text-white relative z-10 inline">
+        <div className="rounded-2xl px-4.5 py-3 text-base bg-surface/50 backdrop-blur-md border border-white/10 text-text-primary rounded-tl-none shadow-lg relative before:absolute before:inset-0 before:rounded-2xl before:rounded-tl-none before:bg-gradient-to-br before:from-white/[0.02] before:to-transparent before:pointer-events-none w-full min-w-0">
+          <div className="prose prose-invert prose-base max-w-none prose-headings:font-bold prose-headings:tracking-tight prose-p:leading-relaxed prose-p:text-[15px] prose-p:text-text-primary prose-strong:font-semibold prose-strong:text-white relative z-10 inline break-words w-full min-w-0">
             <ReactMarkdown
               components={{
                 pre({ children }) {

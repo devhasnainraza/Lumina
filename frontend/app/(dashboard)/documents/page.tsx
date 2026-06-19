@@ -9,6 +9,7 @@ import { Database, FileText, Activity } from 'lucide-react';
 
 import { useEffect } from 'react';
 import { useUploadStore } from '@/store/uploadStore';
+import { MobileMenu } from '@/components/dashboard/MobileMenu';
 
 export default function DocumentsPage() {
   const { data, isLoading, error } = useDocuments();
@@ -54,11 +55,15 @@ export default function DocumentsPage() {
             <span className="w-1.5 h-1.5 rounded-full bg-success animate-pulse" />
           </div>
         </div>
-        
-        {/* Quick status indicator */}
-        <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/5 border border-white/8 text-[10px] font-bold uppercase tracking-wider text-text-secondary">
-          <Activity className="w-3 h-3 text-primary" />
-          <span>Syncing Database</span>
+
+        {/* Header Actions */}
+        <div className="flex items-center gap-3">
+          {/* Quick status indicator */}
+          <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/5 border border-white/8 text-[10px] font-bold uppercase tracking-wider text-text-secondary">
+            <Activity className="w-3 h-3 text-primary" />
+            <span>Syncing Database</span>
+          </div>
+          <MobileMenu />
         </div>
       </header>
 

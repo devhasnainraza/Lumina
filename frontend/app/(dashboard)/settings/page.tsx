@@ -32,6 +32,7 @@ import { useState, useEffect } from 'react';
 import { authApi } from '@/lib/api/auth';
 import { toast } from 'sonner';
 import { useRouter } from 'next/navigation';
+import { motion } from 'framer-motion';
 import {
   Dialog,
   DialogContent,
@@ -40,6 +41,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import { MobileMenu } from '@/components/dashboard/MobileMenu';
 
 // Avatar configurations
 const DEFAULT_AVATAR_GRADIENT = 'from-violet-600 to-indigo-600';
@@ -413,13 +415,12 @@ export default function SettingsPage() {
         {/* API Connection Test status badge */}
         {apiKeyStatus && (
           <div
-            className={`p-3 rounded-lg border flex items-start gap-2.5 animate-fadeIn text-xs ${
-              apiKeyStatus === 'success'
+            className={`p-3 rounded-lg border flex items-start gap-2.5 animate-fadeIn text-xs ${apiKeyStatus === 'success'
                 ? 'bg-success/5 border-success/30 text-success'
                 : apiKeyStatus === 'error'
-                ? 'bg-error/5 border-error/30 text-error'
-                : 'bg-secondary/5 border-secondary/30 text-secondary'
-            }`}
+                  ? 'bg-error/5 border-error/30 text-error'
+                  : 'bg-secondary/5 border-secondary/30 text-secondary'
+              }`}
           >
             {apiKeyStatus === 'success' && <CheckCircle2 className="w-4 h-4 mt-0.5 flex-shrink-0" />}
             {apiKeyStatus === 'error' && <XCircle className="w-4 h-4 mt-0.5 flex-shrink-0" />}
@@ -476,11 +477,10 @@ export default function SettingsPage() {
                 key={theme.id}
                 type="button"
                 onClick={() => setSelectedTheme(theme.id)}
-                className={`p-3.5 rounded-xl border text-left flex flex-col justify-between h-20 transition-all duration-200 ${
-                  selectedTheme === theme.id
+                className={`p-3.5 rounded-xl border text-left flex flex-col justify-between h-20 transition-all duration-200 ${selectedTheme === theme.id
                     ? 'border-secondary bg-secondary/5 ring-1 ring-secondary shadow-lg shadow-secondary/5'
                     : 'border-white/5 bg-white/[0.01] hover:border-white/15'
-                }`}
+                  }`}
               >
                 <div className={`w-3.5 h-3.5 rounded-full bg-gradient-to-r ${theme.color}`} />
                 <span className="text-xs font-bold text-text-primary">{theme.label}</span>
@@ -501,11 +501,10 @@ export default function SettingsPage() {
                 key={density.id}
                 type="button"
                 onClick={() => setLayoutDensity(density.id)}
-                className={`p-4 rounded-xl border text-left space-y-1 transition-all duration-200 ${
-                  layoutDensity === density.id
+                className={`p-4 rounded-xl border text-left space-y-1 transition-all duration-200 ${layoutDensity === density.id
                     ? 'border-secondary bg-secondary/5 ring-1 ring-secondary shadow-lg shadow-secondary/5'
                     : 'border-white/5 bg-white/[0.01] hover:border-white/15'
-                }`}
+                  }`}
               >
                 <h4 className="text-xs font-bold text-text-primary">{density.title}</h4>
                 <p className="text-[10px] text-text-muted">{density.desc}</p>
@@ -832,7 +831,17 @@ export default function SettingsPage() {
   );
 
   return (
-    <div className="relative min-h-screen p-4 md:p-8 max-w-6xl mx-auto space-y-8 animate-fadeIn bg-grid-pattern pb-16">
+    <div className="relative min-h-screen p-4 md:p-8 max-w-6xl mx-auto space-y-8 animate-fadeIn bg-grid-pattern pb-12 overflow-x-hidden">
+      {/* Mobile-only sticky header */}
+      <header className="glass-navbar sticky top-0 z-30 flex md:hidden items-center justify-between px-4 py-3.5 min-h-[73px] gap-2 -mx-4 -mt-4 mb-4">
+        <div className="flex flex-col min-w-0">
+          <h2 className="text-base font-bold text-text-primary truncate">
+            Settings Console
+          </h2>
+        </div>
+        <MobileMenu />
+      </header>
+
       {/* Dynamic glow blobs behind content */}
       <div className="absolute top-10 left-10 w-96 h-96 glow-blob-primary opacity-20 pointer-events-none -z-10" />
       <div className="absolute bottom-20 right-10 w-96 h-96 glow-blob-secondary opacity-15 pointer-events-none -z-10" />
@@ -861,16 +870,19 @@ export default function SettingsPage() {
                 <button
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id as any)}
-                  className={`w-full flex items-center justify-between px-3.5 py-3 rounded-lg text-left transition-all duration-200 group ${
-                    isActive
-                      ? 'bg-primary/20 text-white border border-primary/30 shadow-primary-sm'
-                      : 'text-text-secondary hover:text-white hover:bg-white/5 border border-transparent'
-                  }`}
+                  className="w-full flex items-center justify-between px-3.5 py-3 rounded-lg text-left transition-all duration-200 group relative cursor-pointer"
                 >
-                  <div className="flex items-center gap-3">
-                    <Icon className={`w-4 h-4 transition-transform group-hover:scale-115 ${isActive ? 'text-primary' : 'text-text-muted'}`} />
+                  {isActive && (
+                    <motion.div
+                      layoutId="activeSettingsTab"
+                      className="absolute inset-0 bg-primary/15 border border-primary/30 rounded-lg shadow-sm"
+                      transition={{ type: "spring", stiffness: 380, damping: 30 }}
+                    />
+                  )}
+                  <div className="flex items-center gap-3 relative z-10">
+                    <Icon className={`w-4 h-4 transition-transform group-hover:scale-110 ${isActive ? 'text-primary' : 'text-text-muted'}`} />
                     <div>
-                      <p className="text-xs font-semibold">{tab.label}</p>
+                      <p className="text-xs font-semibold text-text-primary">{tab.label}</p>
                       <p className="text-[9px] text-text-muted line-clamp-1 mt-0.5">{tab.desc}</p>
                     </div>
                   </div>
@@ -888,11 +900,10 @@ export default function SettingsPage() {
                 <button
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id as any)}
-                  className={`flex items-center gap-2 px-4 py-2.5 rounded-full whitespace-nowrap snap-center text-xs font-bold transition-all duration-200 ${
-                    isActive
+                  className={`flex items-center gap-2 px-4 py-2.5 rounded-full whitespace-nowrap snap-center text-xs font-bold transition-all duration-200 ${isActive
                       ? 'bg-primary text-white shadow-lg shadow-primary/25 border border-primary/40'
                       : 'bg-surface-secondary text-text-secondary border border-white/5 hover:text-white'
-                  }`}
+                    }`}
                 >
                   <Icon className="w-3.5 h-3.5" />
                   {tab.label.split(' ')[0]}

@@ -110,7 +110,7 @@ export function Pricing() {
             const priceVal = plan.price[billingPeriod];
             const displayPrice = typeof priceVal === "number" ? `$${priceVal}` : priceVal;
 
-            return (
+             return (
               <motion.div
                 key={index}
                 initial={{ opacity: 0, y: 25 }}
@@ -119,13 +119,13 @@ export function Pricing() {
                 transition={{ duration: 0.5, delay: index * 0.1 }}
                 className={`relative flex flex-col justify-between rounded-2xl p-8 backdrop-blur-md transition-all duration-300 border ${
                   plan.popular
-                    ? "bg-surface/75 border-primary shadow-primary-md scale-102 z-10 md:-translate-y-2"
-                    : "bg-surface/40 border-white/5 hover:border-white/10"
+                    ? "bg-surface/90 border-primary/50 shadow-[0_0_40px_rgba(124,58,237,0.3)] scale-[1.03] z-10 md:-translate-y-2 ring-1 ring-primary/40"
+                    : "bg-surface/40 border-white/5 hover:border-white/20 hover:bg-surface/60 hover:scale-[1.01] hover:shadow-2xl"
                 }`}
               >
                 {/* Popular Badge */}
                 {plan.popular && (
-                  <div className="absolute -top-4 left-1/2 -translate-x-1/2 rounded-full bg-gradient-to-r from-primary to-secondary px-4 py-1 text-xs font-semibold uppercase tracking-wider text-white shadow-primary-sm flex items-center gap-1">
+                  <div className="absolute -top-4 left-1/2 -translate-x-1/2 rounded-full bg-gradient-to-r from-primary to-secondary px-4 py-1 text-xs font-semibold uppercase tracking-wider text-white shadow-lg shadow-primary/30 flex items-center gap-1">
                     <Sparkles className="h-3 w-3 animate-spin" style={{ animationDuration: "3s" }} />
                     Most Popular
                   </div>
